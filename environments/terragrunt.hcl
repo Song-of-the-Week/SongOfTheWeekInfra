@@ -6,7 +6,7 @@
 remote_state {
   backend = "s3"
   generate = {
-    path      = "backend.tf"
+    path      = "../../modules/backend.tf"
     if_exists = "overwrite_terragrunt"
   }
   config = {
@@ -19,14 +19,14 @@ remote_state {
   }
 }
 
-# generate "provider" {
-#   path = "provider.tf"
-#   if_exists = "overwrite_terragrunt"
-#   contents = <<EOF
-# provider "aws" {
-#   assume_role {
-#     role_arn = "arn:aws:iam::471112828417:role/terragrunt"
-#   }
-# }
-# EOF
-# }
+generate "provider" {
+  path = "provider.tf"
+  if_exists = "overwrite_terragrunt"
+  contents = <<EOF
+provider "aws" {
+  assume_role {
+    role_arn = "arn:aws:iam::471112828417:role/terraform"
+  }
+}
+EOF
+}

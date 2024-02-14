@@ -11,6 +11,6 @@ terraform {
 
 provider "aws" {
   assume_role {
-    role_arn = "arn:aws:iam::471112828417:role/terragrunt"
+    role_arn = "arn:aws:iam::471112828417:role/terraform"
   }
 }
