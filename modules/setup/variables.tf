@@ -1,4 +1,4 @@
-variable "assume_role_arn" {
+variable "assume_role_name" {
   description = "Role to assume for AWS API calls"
-  default = "arn:aws:iam::471112828417:role/terragrunt"
+  default = "terragrunt"
 }
