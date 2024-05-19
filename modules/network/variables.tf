@@ -1,5 +1,5 @@
 variable "env" {
-    type = string
+  type = string
 }
 
 variable "account_id" {
@@ -8,4 +8,9 @@ variable "account_id" {
 
 variable "assume_role_name" {
   type = string
+}
+
+variable "domain_name" {
+  default = "sotw-app.com"
+  type    = string
 }

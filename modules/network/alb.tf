@@ -10,8 +10,6 @@ resource "aws_lb" "ecs_alb" {
   }
 }
 
-
-
 resource "aws_lb_listener" "ecs_alb_listener" {
   load_balancer_arn = aws_lb.ecs_alb.arn
   port              = 80
@@ -22,8 +20,6 @@ resource "aws_lb_listener" "ecs_alb_listener" {
     target_group_arn = aws_lb_target_group.ecs_tg.arn
   }
 }
-
-
 
 resource "aws_lb_target_group" "ecs_tg" {
   name        = "ecs-target-group"

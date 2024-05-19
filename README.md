@@ -21,3 +21,5 @@ In the future these might be CloudFormation templates!
     * `ssh-keygen`, call it whatever you want, no password
     * Ensure you `terragrunt apply` on `deployments/<env>/secrets
     * Manually upload the secrets to the public and private secrets
+
+* Manually register domain in Route53. You will need to access that in the `network/r53.tf` file
