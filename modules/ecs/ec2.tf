@@ -1,7 +1,7 @@
 resource "aws_launch_template" "ecs_lt" {
   name_prefix   = "ecs-template"
   image_id      = data.aws_ami.amazon_linux_2.id
-  instance_type = "t3.micro"
+  instance_type = "t2.micro"
 
   key_name               = aws_key_pair.ec2_ecs_key.key_name
   vpc_security_group_ids = [data.aws_ssm_parameter.sg_id.value]
@@ -61,9 +61,9 @@ data "aws_ami" "amazon_linux_2" {
 
 resource "aws_autoscaling_group" "ecs_asg" {
   vpc_zone_identifier = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]
-  desired_capacity    = 1
-  max_size            = 3
-  min_size            = 1
+  #   desired_capacity    = 3
+  max_size = 1 // TODO: REVISIT
+  min_size = 1
 
   launch_template {
     id      = aws_launch_template.ecs_lt.id

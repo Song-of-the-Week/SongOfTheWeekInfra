@@ -12,7 +12,7 @@ resource "aws_ecs_capacity_provider" "this" {
       maximum_scaling_step_size = 1000
       minimum_scaling_step_size = 1
       status                    = "ENABLED"
-      target_capacity           = 3
+      target_capacity           = 60
     }
   }
 }
@@ -63,7 +63,7 @@ resource "aws_ecs_service" "this" {
   name            = "sotw-ecs-service-${var.env}"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.this.arn
-  desired_count   = 1
+  desired_count   = 1 // TODO: REVISIT THIS BEFORE DEPLOYING FOR REAL
 
   network_configuration {
     subnets         = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]
