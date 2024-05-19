@@ -45,8 +45,8 @@ resource "aws_ecs_task_definition" "this" {
       name = "dockergs"
       // TODO: REPLACE THIS WITH REAL ECS
       image     = "public.ecr.aws/b5a8n3h2/sotw-prod-temp:latest"
-      cpu       = 256
-      memory    = 512
+      cpu       = 128
+      memory    = 256
       essential = true
       portMappings = [
         {
@@ -63,7 +63,7 @@ resource "aws_ecs_service" "this" {
   name            = "sotw-ecs-service-${var.env}"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.this.arn
-  desired_count   = 2
+  desired_count   = 1
 
   network_configuration {
     subnets         = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]
@@ -77,7 +77,7 @@ resource "aws_ecs_service" "this" {
   }
 
   triggers = {
-    redeployment = timestamp()
+    redeployment = plantimestamp()
   }
 
   capacity_provider_strategy {
