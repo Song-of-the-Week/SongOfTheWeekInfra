@@ -21,6 +21,24 @@ resource "aws_lb_listener" "ecs_alb_listener" {
   }
 }
 
+data "aws_acm_certificate" "certificate" {
+  domain      = var.domain_name
+  statuses    = ["ISSUED"]
+  most_recent = true
+}
+
+resource "aws_lb_listener" "ecs_alb_listener_https" {
+  load_balancer_arn = aws_lb.ecs_alb.arn
+  port              = 443
+  protocol          = "HTTPS"
+  certificate_arn   = data.aws_acm_certificate.certificate.arn
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.ecs_tg.arn
+  }
+}
+
+
 resource "aws_lb_target_group" "ecs_tg" {
   name        = "ecs-target-group"
   port        = 80
