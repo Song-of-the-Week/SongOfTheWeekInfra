@@ -20,20 +20,23 @@ resource "aws_subnet" "db_1a" {
     availability_zone = "us-east-1a"
 }
 
-resource "aws_security_group" "db" {
-  name        = "db"
-  description = "Allow TLS inbound traffic and all outbound traffic"
-  vpc_id      = aws_vpc.main.id
-
-  tags = {
-    Name = "db"
-  }
+resource "aws_subnet" "ecs_1a" {
+    vpc_id = aws_vpc.main.id
+    cidr_block = "10.0.0.0/20"
+    map_public_ip_on_launch = true
+    availability_zone = "us-east-1a"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
-  security_group_id = aws_security_group.db.id
-  cidr_ipv4         = aws_vpc.main.cidr_block
-  from_port         = 443
-  ip_protocol       = "tcp"
-  to_port           = 443
+resource "aws_subnet" "ecs_1b" {
+    vpc_id = aws_vpc.main.id
+    cidr_block = "10.0.16.0/20"
+    map_public_ip_on_launch = true
+    availability_zone = "us-east-1b"
+}
+
+resource "aws_internet_gateway" "internet_gateway" {
+ vpc_id = aws_vpc.main.id
+ tags = {
+   Name = "internet_gateway"
+ }
 }
