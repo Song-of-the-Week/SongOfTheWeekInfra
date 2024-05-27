@@ -25,6 +25,12 @@ resource "aws_launch_template" "ecs_lt" {
     }
   }
 
+  update_default_version = var.update_default_version
+
+  network_interfaces {
+    associate_public_ip_address = false
+  }
+
   user_data = base64encode(data.template_file.user_data.rendered)
 }
 

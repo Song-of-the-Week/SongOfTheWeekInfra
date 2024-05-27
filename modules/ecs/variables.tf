@@ -1,5 +1,5 @@
 variable "env" {
-    type = string
+  type = string
 }
 
 variable "account_id" {
@@ -8,4 +8,9 @@ variable "account_id" {
 
 variable "assume_role_name" {
   type = string
+}
+
+variable "update_default_version" {
+  type    = bool
+  default = true
 }

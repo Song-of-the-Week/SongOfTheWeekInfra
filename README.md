@@ -10,6 +10,10 @@ For now, create an access key for the `terraform` IAM user. (We will make this b
 `export AWS_ACCESS_KEY_ID=<access key>`
 `export AWS_SECRET_ACCESS_KEY_ID=<secret access key>`
 
+## Configure Credentials for Azure
+* Authenticate to the Azure account
+* Follow `Authenticate using the Azure CLI` (here)[https://developer.hashicorp.com/terraform/tutorials/azure-get-started/azure-build#authenticate-using-the-azure-cli]
+
 # Manual Setup Required (Ugh)
 In the future these might be CloudFormation templates!
 
