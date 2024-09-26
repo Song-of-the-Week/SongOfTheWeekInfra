@@ -1,5 +1,9 @@
+locals {
+  cluster_name = "sotw-cluster-${var.env}"
+}
+
 resource "aws_ecs_cluster" "this" {
-  name = "sotw-cluster-${var.env}"
+  name = local.cluster_name
 }
 
 resource "aws_ecs_capacity_provider" "this" {
@@ -33,7 +37,7 @@ resource "aws_ecs_task_definition" "this" {
   family             = "sotw-ecs-task-definition-${var.env}"
   network_mode       = "awsvpc"
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-  cpu                = 256
+  cpu                = 768
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -42,9 +46,59 @@ resource "aws_ecs_task_definition" "this" {
 
   container_definitions = jsonencode([
     {
-      name = "dockergs"
+      name = "api"
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "public.ecr.aws/b5a8n3h2/sotw-prod-temp:latest"
+      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-prod:latest"
+      cpu       = 128
+      memory    = 256
+      essential = true
+      portMappings = [
+        {
+          containerPort = 8000
+          hostPort      = 8000
+          protocol      = "tcp"
+        }
+      ],
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          awslogs-group         = "ecs/${var.backend_container_name}",
+          awslogs-region        = "us-east-1",
+          awslogs-stream-prefix = local.cluster_name
+          awslogs-create-group  = "true"
+
+        }
+      },
+    },
+    {
+      name = "frontend"
+      // TODO: REPLACE THIS WITH REAL ECS
+      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:latest"
+      cpu       = 128
+      memory    = 256
+      essential = true
+      portMappings = [
+        {
+          containerPort = 8080
+          hostPort      = 8080
+          protocol      = "tcp"
+        }
+      ],
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          awslogs-group         = "ecs/${var.frontend_container_name}",
+          awslogs-region        = "us-east-1",
+          awslogs-stream-prefix = local.cluster_name
+          awslogs-create-group  = "true"
+
+        }
+      },
+    },
+    {
+      name = "nginx"
+      // TODO: REPLACE THIS WITH REAL ECS
+      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-prod:latest"
       cpu       = 128
       memory    = 256
       essential = true
@@ -54,8 +108,17 @@ resource "aws_ecs_task_definition" "this" {
           hostPort      = 80
           protocol      = "tcp"
         }
-      ]
-    }
+      ],
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          awslogs-group         = "ecs/${var.proxy_container_name}",
+          awslogs-region        = "us-east-1",
+          awslogs-stream-prefix = local.cluster_name
+          awslogs-create-group  = "true"
+        }
+      },
+    },
   ])
 }
 
@@ -87,7 +150,7 @@ resource "aws_ecs_service" "this" {
 
   load_balancer {
     target_group_arn = data.aws_ssm_parameter.tg_id.value
-    container_name   = "dockergs"
+    container_name   = "nginx"
     container_port   = 80
   }
 

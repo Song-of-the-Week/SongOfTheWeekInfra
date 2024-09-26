@@ -3,8 +3,8 @@ resource "aws_launch_template" "ecs_lt" {
   image_id      = data.aws_ami.amazon_linux_2.id
   instance_type = "t2.micro"
 
-  key_name               = aws_key_pair.ec2_ecs_key.key_name
-  vpc_security_group_ids = [data.aws_ssm_parameter.sg_id.value]
+  key_name = aws_key_pair.ec2_ecs_key.key_name
+  #   vpc_security_group_ids = [data.aws_ssm_parameter.sg_id.value]
 
   iam_instance_profile {
     name = "ecsInstanceRole-profile"
@@ -28,7 +28,8 @@ resource "aws_launch_template" "ecs_lt" {
   update_default_version = var.update_default_version
 
   network_interfaces {
-    associate_public_ip_address = false
+    associate_public_ip_address = true
+    security_groups             = [data.aws_ssm_parameter.sg_id.value]
   }
 
   user_data = base64encode(data.template_file.user_data.rendered)
