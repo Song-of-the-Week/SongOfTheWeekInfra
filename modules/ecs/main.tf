@@ -1,5 +1,6 @@
 locals {
-  cluster_name = "sotw-cluster-${var.env}"
+  cluster_name         = "sotw-cluster-${var.env}"
+  database_credentials = data.aws_ssm_parameter.database_credentials.value
 }
 
 resource "aws_ecs_cluster" "this" {
@@ -46,11 +47,11 @@ resource "aws_ecs_task_definition" "this" {
 
   container_definitions = jsonencode([
     {
-      name = "api"
+      name = var.backend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
       image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-prod:latest"
       cpu       = 128
-      memory    = 256
+      memory    = 512
       essential = true
       portMappings = [
         {
@@ -66,12 +67,29 @@ resource "aws_ecs_task_definition" "this" {
           awslogs-region        = "us-east-1",
           awslogs-stream-prefix = local.cluster_name
           awslogs-create-group  = "true"
-
         }
       },
+      secrets = [{
+        name      = "DB_HOST",
+        valueFrom = "${local.database_credentials}:host::"
+        }, {
+        name      = "DB_USER",
+        valueFrom = "${local.database_credentials}:username::"
+        }, {
+        name      = "DB_PASSWORD",
+        valueFrom = "${local.database_credentials}:password::"
+        }, {
+        name      = "DB_PORT",
+        valueFrom = "${local.database_credentials}:port::"
+        },
+        {
+          name      = "DB_NAME",
+          valueFrom = "${local.database_credentials}:db::"
+        },
+      ]
     },
     {
-      name = "frontend"
+      name = var.frontend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
       image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:latest"
       cpu       = 128
@@ -84,6 +102,11 @@ resource "aws_ecs_task_definition" "this" {
           protocol      = "tcp"
         }
       ],
+      dependsOn = [{
+        containerName = var.backend_container_name
+        condition     = "START"
+      }]
+      command = ["npm", "run", "serve-prod"]
       logConfiguration = {
         logDriver = "awslogs",
         options = {
@@ -91,16 +114,15 @@ resource "aws_ecs_task_definition" "this" {
           awslogs-region        = "us-east-1",
           awslogs-stream-prefix = local.cluster_name
           awslogs-create-group  = "true"
-
         }
       },
     },
     {
-      name = "nginx"
+      name = var.proxy_container_name
       // TODO: REPLACE THIS WITH REAL ECS
       image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-prod:latest"
       cpu       = 128
-      memory    = 256
+      memory    = 128
       essential = true
       portMappings = [
         {
@@ -109,6 +131,16 @@ resource "aws_ecs_task_definition" "this" {
           protocol      = "tcp"
         }
       ],
+      dependsOn = [
+        {
+          containerName = var.backend_container_name
+          condition     = "START"
+        },
+        {
+          containerName = var.frontend_container_name
+          condition     = "START"
+        },
+      ]
       logConfiguration = {
         logDriver = "awslogs",
         options = {

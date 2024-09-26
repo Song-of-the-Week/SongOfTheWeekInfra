@@ -13,3 +13,8 @@ data "aws_ssm_parameter" "tg_id" {
 data "aws_ssm_parameter" "ec2_pub_arn" {
   name = "/secrets/ecs/key-pair/public/arn"
 }
+
+data "aws_ssm_parameter" "database_credentials" {
+  name = "/secrets/database/credentials/arn"
+}
+

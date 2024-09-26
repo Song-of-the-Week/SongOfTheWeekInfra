@@ -69,5 +69,18 @@ resource "aws_iam_policy" "this" {
         Effect = "Allow"
       }
     ]
+    Statement = [
+      {
+        Action = [
+          "kms:Decrypt",
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = [
+          data.aws_ssm_parameter.database_credentials.value,
+          "arn:aws:kms:*:${var.env}:key/key_id"
+        ]
+        Effect = "Allow"
+      }
+    ]
   })
 }
