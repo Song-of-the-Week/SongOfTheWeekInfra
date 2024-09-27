@@ -1,5 +1,6 @@
 resource "aws_lb" "ecs_alb" {
-  name               = "sotw-ecs-alb-${var.env}"
+  # name               = "sotw-ecs-alb-${var.env}"
+  name               = "ecs-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.ecs.id]
@@ -46,6 +47,8 @@ resource "aws_lb_target_group" "ecs_tg" {
   target_type = "ip"
   vpc_id      = aws_vpc.main.id
   health_check {
-    path = "/"
+    path     = "/"
+    timeout  = 30
+    interval = 60
   }
 }
