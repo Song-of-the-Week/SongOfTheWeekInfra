@@ -36,7 +36,7 @@ resource "aws_ecs_cluster_capacity_providers" "this" {
 
 resource "aws_ecs_task_definition" "this" {
   family             = "sotw-ecs-task-definition-${var.env}"
-  network_mode       = "awsvpc"
+  network_mode       = "bridge"
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
   cpu                = 768
 
@@ -51,7 +51,7 @@ resource "aws_ecs_task_definition" "this" {
       // TODO: REPLACE THIS WITH REAL ECS
       image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-prod:latest"
       cpu       = 128
-      memory    = 512
+      memory    = 64
       essential = true
       portMappings = [
         {
@@ -86,6 +86,10 @@ resource "aws_ecs_task_definition" "this" {
           name      = "DB_NAME",
           valueFrom = "${local.database_credentials}:db::"
         },
+      ],
+      environment = [
+        { name = "DB_SCHEME", value = "cockroachdb" },
+        { name = "BACKEND_CORS_ORIGINS", value = "[\"127.0.0.1:8000\", \"127.0.0.1:8080\"]" }
       ]
     },
     {
@@ -93,7 +97,7 @@ resource "aws_ecs_task_definition" "this" {
       // TODO: REPLACE THIS WITH REAL ECS
       image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:latest"
       cpu       = 128
-      memory    = 256
+      memory    = 850
       essential = true
       portMappings = [
         {
@@ -116,13 +120,18 @@ resource "aws_ecs_task_definition" "this" {
           awslogs-create-group  = "true"
         }
       },
+      # environment = [
+      #   { name = "VUE_APP_HOSTNAME", value = "http://127.0.0.1:8080" },
+      #   { name = "VUE_APP_API_HOSTNAME", value = "http://127.0.0.1:8000" },
+      #   { name = "VUE_APP_SPOTIFY_CALLBACK_URI", value = "http://127.0.0.1:8080" },
+      # ]
     },
     {
       name = var.proxy_container_name
       // TODO: REPLACE THIS WITH REAL ECS
       image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-prod:latest"
       cpu       = 128
-      memory    = 128
+      memory    = 16
       essential = true
       portMappings = [
         {
