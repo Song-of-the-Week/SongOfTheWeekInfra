@@ -29,3 +29,8 @@ variable "proxy_container_name" {
   type    = string
   default = "nginx"
 }
+
+variable "email_user" {
+  type    = string
+  default = "no-reply"
+}

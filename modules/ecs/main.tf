@@ -91,7 +91,7 @@ resource "aws_ecs_task_definition" "this" {
         { name = "DB_SCHEME", value = "cockroachdb" },
         { name = "BACKEND_CORS_ORIGINS", value = "[\"http://127.0.0.1:8000\", \"http://127.0.0.1:8080\"]" },
         { name = "COOKIE_SECURE_SETTING", value = "TRUE" },
-        { name = "SMTP_FROM", value = local.email_address }
+        { name = "SMTP_FROM", value = "${var.email_user}@${local.email_address}" }
       ]
     },
     {
