@@ -51,12 +51,11 @@ resource "aws_ecs_task_definition" "this" {
       // TODO: REPLACE THIS WITH REAL ECS
       image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-prod:latest"
       cpu       = 128
-      memory    = 64
+      memory    = 128
       essential = true
       portMappings = [
         {
           containerPort = 8000
-          hostPort      = 8000
           protocol      = "tcp"
         }
       ],
@@ -89,7 +88,8 @@ resource "aws_ecs_task_definition" "this" {
       ],
       environment = [
         { name = "DB_SCHEME", value = "cockroachdb" },
-        { name = "BACKEND_CORS_ORIGINS", value = "[\"127.0.0.1:8000\", \"127.0.0.1:8080\"]" }
+        { name = "BACKEND_CORS_ORIGINS", value = "[\"http://127.0.0.1:8000\", \"http://127.0.0.1:8080\"]" },
+        { name = "COOKIE_SECURE_SETTING", value = "TRUE" },
       ]
     },
     {
@@ -102,7 +102,6 @@ resource "aws_ecs_task_definition" "this" {
       portMappings = [
         {
           containerPort = 8080
-          hostPort      = 8080
           protocol      = "tcp"
         }
       ],
@@ -136,7 +135,6 @@ resource "aws_ecs_task_definition" "this" {
       portMappings = [
         {
           containerPort = 80
-          hostPort      = 80
           protocol      = "tcp"
         }
       ],
@@ -159,6 +157,9 @@ resource "aws_ecs_task_definition" "this" {
           awslogs-create-group  = "true"
         }
       },
+      links = [
+        var.frontend_container_name, var.backend_container_name
+      ]
     },
   ])
 }
@@ -169,10 +170,10 @@ resource "aws_ecs_service" "this" {
   task_definition = aws_ecs_task_definition.this.arn
   desired_count   = 1 // TODO: REVISIT THIS BEFORE DEPLOYING FOR REAL
 
-  network_configuration {
-    subnets         = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]
-    security_groups = [data.aws_ssm_parameter.sg_id.value]
-  }
+  # network_configuration {
+  #   subnets         = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]
+  #   security_groups = [data.aws_ssm_parameter.sg_id.value]
+  # }
 
   force_new_deployment = true
 
