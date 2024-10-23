@@ -34,3 +34,18 @@ variable "email_user" {
   type    = string
   default = "no-reply"
 }
+
+variable "registration_verification_endpoint" {
+  type    = string
+  default = "auth/verify/"
+}
+
+variable "email_change_verification_endpoint" {
+  type    = string
+  default = "user/email/verify/"
+}
+
+variable "password_reset_verification_endpoint" {
+  type    = string
+  default = "password-reset/"
+}

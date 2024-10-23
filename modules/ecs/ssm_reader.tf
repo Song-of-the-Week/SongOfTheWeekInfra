@@ -21,3 +21,7 @@ data "aws_ssm_parameter" "database_credentials" {
 data "aws_ssm_parameter" "email_address" {
   name = "/email/send-from-address"
 }
+
+data "aws_ssm_parameter" "domain_name" {
+  name = "/route53/domain"
+}

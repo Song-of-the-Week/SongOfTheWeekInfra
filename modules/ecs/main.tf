@@ -2,6 +2,7 @@ locals {
   cluster_name         = "sotw-cluster-${var.env}"
   database_credentials = data.aws_ssm_parameter.database_credentials.value
   email_address        = data.aws_ssm_parameter.email_address.value
+  domain_name          = data.aws_ssm_parameter.domain_name.value
 }
 
 resource "aws_ecs_cluster" "this" {
@@ -91,7 +92,10 @@ resource "aws_ecs_task_definition" "this" {
         { name = "DB_SCHEME", value = "cockroachdb" },
         { name = "BACKEND_CORS_ORIGINS", value = "[\"http://127.0.0.1:8000\", \"http://127.0.0.1:8080\"]" },
         { name = "COOKIE_SECURE_SETTING", value = "TRUE" },
-        { name = "SMTP_FROM", value = "${var.email_user}@${local.email_address}" }
+        { name = "SMTP_FROM", value = "${var.email_user}@${local.email_address}" },
+        { name = "REGISTRATION_VERIFICATION_URL", value = "https://${local.domain_name}/${var.registration_verification_endpoint}" },
+        { name = "EMAIL_CHANGE_VERIFICATION_URL", value = "https://${local.domain_name}/${var.email_change_verification_endpoint}" },
+        { name = "PASSWORD_RESET_VERIFICATION_URL", value = "https://${local.domain_name}/${var.password_reset_verification_endpoint}" },
       ]
     },
     {
