@@ -27,3 +27,5 @@ In the future these might be CloudFormation templates!
     * Manually upload the secrets to the public and private secrets
 
 * Manually register domain in Route53. You will need to access that in the `network/r53.tf` file
+
+* Manually register your AWS SES domain. Place it in /email/send-from-address as a string in Systems Manager Parameter Store.

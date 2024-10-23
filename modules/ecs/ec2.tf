@@ -7,7 +7,7 @@ resource "aws_launch_template" "ecs_lt" {
   #   vpc_security_group_ids = [data.aws_ssm_parameter.sg_id.value]
 
   iam_instance_profile {
-    name = "ecsInstanceRole-profile"
+    name = aws_iam_instance_profile.ecs_instance_profile.name
   }
 
   block_device_mappings {
