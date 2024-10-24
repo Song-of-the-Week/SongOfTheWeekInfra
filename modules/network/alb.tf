@@ -41,10 +41,10 @@ resource "aws_lb_listener" "ecs_alb_listener_https" {
 
 
 resource "aws_lb_target_group" "ecs_tg" {
-  name        = "ecs-target-group"
+  name        = "sotw-ecs-target-group-${var.env}"
   port        = 80
   protocol    = "HTTP"
-  target_type = "ip"
+  target_type = "instance"
   vpc_id      = aws_vpc.main.id
   health_check {
     path     = "/"

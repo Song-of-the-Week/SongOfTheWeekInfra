@@ -1,6 +1,11 @@
 locals {
   cluster_name         = "sotw-cluster-${var.env}"
   database_credentials = data.aws_ssm_parameter.database_credentials.value
+  email_address        = data.aws_ssm_parameter.email_address.value
+  domain_name          = data.aws_ssm_parameter.domain_name.value
+  api_version_tag      = data.aws_ssm_parameter.ecs_api_version.value
+  frontend_version_tag = data.aws_ssm_parameter.ecs_frontend_version.value
+  nginx_version_tag    = data.aws_ssm_parameter.ecs_nginx_version.value
 }
 
 resource "aws_ecs_cluster" "this" {
@@ -36,7 +41,7 @@ resource "aws_ecs_cluster_capacity_providers" "this" {
 
 resource "aws_ecs_task_definition" "this" {
   family             = "sotw-ecs-task-definition-${var.env}"
-  network_mode       = "awsvpc"
+  network_mode       = "bridge"
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
   cpu                = 768
 
@@ -49,14 +54,13 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.backend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-prod:latest"
+      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-prod:${local.api_version_tag}"
       cpu       = 128
-      memory    = 512
+      memory    = 128
       essential = true
       portMappings = [
         {
           containerPort = 8000
-          hostPort      = 8000
           protocol      = "tcp"
         }
       ],
@@ -86,19 +90,27 @@ resource "aws_ecs_task_definition" "this" {
           name      = "DB_NAME",
           valueFrom = "${local.database_credentials}:db::"
         },
-      ]
+      ],
+      environment = [
+        { name = "DB_SCHEME", value = "cockroachdb" },
+        { name = "BACKEND_CORS_ORIGINS", value = "[\"http://127.0.0.1:8000\", \"http://127.0.0.1:8080\"]" },
+        { name = "COOKIE_SECURE_SETTING", value = "TRUE" },
+        { name = "SMTP_FROM", value = "${var.email_user}@${local.email_address}" },
+        { name = "SMTP_FROM_NAME", value = var.email_user_from_name },
+        { name = "REGISTRATION_VERIFICATION_URL", value = "https://${local.domain_name}/${var.registration_verification_endpoint}" },
+        { name = "EMAIL_CHANGE_VERIFICATION_URL", value = "https://${local.domain_name}/${var.email_change_verification_endpoint}" },
+      { name = "PASSWORD_RESET_VERIFICATION_URL", value = "https://${local.domain_name}/${var.password_reset_verification_endpoint}" }, ]
     },
     {
       name = var.frontend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:latest"
+      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:${local.frontend_version_tag}"
       cpu       = 128
-      memory    = 256
+      memory    = 850
       essential = true
       portMappings = [
         {
           containerPort = 8080
-          hostPort      = 8080
           protocol      = "tcp"
         }
       ],
@@ -116,18 +128,22 @@ resource "aws_ecs_task_definition" "this" {
           awslogs-create-group  = "true"
         }
       },
+      environment = [
+        { name = "VUE_APP_HOSTNAME", value = "https://${local.domain_name}/" },
+        { name = "VUE_APP_API_HOSTNAME", value = "https://${local.domain_name}/" },
+        { name = "VUE_APP_SPOTIFY_CALLBACK_URI", value = "https://${local.domain_name}/" },
+      ]
     },
     {
       name = var.proxy_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-prod:latest"
+      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-prod:${local.nginx_version_tag}"
       cpu       = 128
-      memory    = 128
+      memory    = 16
       essential = true
       portMappings = [
         {
           containerPort = 80
-          hostPort      = 80
           protocol      = "tcp"
         }
       ],
@@ -150,6 +166,9 @@ resource "aws_ecs_task_definition" "this" {
           awslogs-create-group  = "true"
         }
       },
+      links = [
+        var.frontend_container_name, var.backend_container_name
+      ]
     },
   ])
 }
@@ -160,10 +179,10 @@ resource "aws_ecs_service" "this" {
   task_definition = aws_ecs_task_definition.this.arn
   desired_count   = 1 // TODO: REVISIT THIS BEFORE DEPLOYING FOR REAL
 
-  network_configuration {
-    subnets         = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]
-    security_groups = [data.aws_ssm_parameter.sg_id.value]
-  }
+  # network_configuration {
+  #   subnets         = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]
+  #   security_groups = [data.aws_ssm_parameter.sg_id.value]
+  # }
 
   force_new_deployment = true
 
