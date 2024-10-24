@@ -25,3 +25,8 @@ data "aws_ssm_parameter" "email_address" {
 data "aws_ssm_parameter" "domain_name" {
   name = "/route53/domain"
 }
+
+data "aws_ssm_parameter" "ecs_api_version" {
+  name       = "/ecs/api/image-version"
+  depends_on = [aws_ssm_parameter.ecs_version]
+}

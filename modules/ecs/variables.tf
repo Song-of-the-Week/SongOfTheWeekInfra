@@ -35,6 +35,12 @@ variable "email_user" {
   default = "no-reply"
 }
 
+variable "email_user_from_name" {
+  type    = string
+  default = "Song of the Week"
+}
+
+
 variable "registration_verification_endpoint" {
   type    = string
   default = "auth/verify/"

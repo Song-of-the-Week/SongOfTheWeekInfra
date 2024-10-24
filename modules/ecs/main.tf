@@ -3,6 +3,7 @@ locals {
   database_credentials = data.aws_ssm_parameter.database_credentials.value
   email_address        = data.aws_ssm_parameter.email_address.value
   domain_name          = data.aws_ssm_parameter.domain_name.value
+  api_version_tag      = data.aws_ssm_parameter.ecs_api_version.value
 }
 
 resource "aws_ecs_cluster" "this" {
@@ -51,7 +52,7 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.backend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-prod:latest"
+      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-prod:${local.api_version_tag}"
       cpu       = 128
       memory    = 128
       essential = true
@@ -93,10 +94,10 @@ resource "aws_ecs_task_definition" "this" {
         { name = "BACKEND_CORS_ORIGINS", value = "[\"http://127.0.0.1:8000\", \"http://127.0.0.1:8080\"]" },
         { name = "COOKIE_SECURE_SETTING", value = "TRUE" },
         { name = "SMTP_FROM", value = "${var.email_user}@${local.email_address}" },
+        { name = "SMTP_FROM_NAME", value = var.email_user_from_name },
         { name = "REGISTRATION_VERIFICATION_URL", value = "https://${local.domain_name}/${var.registration_verification_endpoint}" },
         { name = "EMAIL_CHANGE_VERIFICATION_URL", value = "https://${local.domain_name}/${var.email_change_verification_endpoint}" },
-        { name = "PASSWORD_RESET_VERIFICATION_URL", value = "https://${local.domain_name}/${var.password_reset_verification_endpoint}" },
-      ]
+      { name = "PASSWORD_RESET_VERIFICATION_URL", value = "https://${local.domain_name}/${var.password_reset_verification_endpoint}" }, ]
     },
     {
       name = var.frontend_container_name
@@ -125,11 +126,11 @@ resource "aws_ecs_task_definition" "this" {
           awslogs-create-group  = "true"
         }
       },
-      # environment = [
-      #   { name = "VUE_APP_HOSTNAME", value = "http://127.0.0.1:8080" },
-      #   { name = "VUE_APP_API_HOSTNAME", value = "http://127.0.0.1:8000" },
-      #   { name = "VUE_APP_SPOTIFY_CALLBACK_URI", value = "http://127.0.0.1:8080" },
-      # ]
+      environment = [
+        { name = "VUE_APP_HOSTNAME", value = "https://${local.domain_name}/" },
+        { name = "VUE_APP_API_HOSTNAME", value = "https://${local.domain_name}/" },
+        { name = "VUE_APP_SPOTIFY_CALLBACK_URI", value = "https://${local.domain_name}/" },
+      ]
     },
     {
       name = var.proxy_container_name
