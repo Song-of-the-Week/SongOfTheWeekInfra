@@ -4,6 +4,8 @@ locals {
   email_address        = data.aws_ssm_parameter.email_address.value
   domain_name          = data.aws_ssm_parameter.domain_name.value
   api_version_tag      = data.aws_ssm_parameter.ecs_api_version.value
+  frontend_version_tag = data.aws_ssm_parameter.ecs_frontend_version.value
+  nginx_version_tag    = data.aws_ssm_parameter.ecs_nginx_version.value
 }
 
 resource "aws_ecs_cluster" "this" {
@@ -102,7 +104,7 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.frontend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:latest"
+      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:${local.frontend_version_tag}"
       cpu       = 128
       memory    = 850
       essential = true
@@ -135,7 +137,7 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.proxy_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-prod:latest"
+      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-prod:${local.nginx_version_tag}"
       cpu       = 128
       memory    = 16
       essential = true
