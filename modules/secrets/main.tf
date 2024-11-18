@@ -29,4 +29,7 @@ resource "aws_secretsmanager_secret_version" "sversion" {
    }
 EOF
 }
- 
+
+resource "aws_secretsmanager_secret" "spotify_credentials" {
+  name = "/spotify/credentials"
+}

@@ -135,6 +135,7 @@ resource "aws_iam_policy" "this" {
         ]
         Resource = [
           data.aws_ssm_parameter.database_credentials.value,
+          data.aws_ssm_parameter.spotify_credentials.value,
           "arn:aws:kms:*:${var.env}:key/key_id"
         ]
         Effect = "Allow"

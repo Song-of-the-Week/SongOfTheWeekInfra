@@ -1,6 +1,7 @@
 locals {
   cluster_name         = "sotw-cluster-${var.env}"
   database_credentials = data.aws_ssm_parameter.database_credentials.value
+  spotify_credentials  = data.aws_ssm_parameter.spotify_credentials.value
   email_address        = data.aws_ssm_parameter.email_address.value
   domain_name          = data.aws_ssm_parameter.domain_name.value
   api_version_tag      = data.aws_ssm_parameter.ecs_api_version.value
@@ -22,7 +23,7 @@ resource "aws_ecs_capacity_provider" "this" {
       maximum_scaling_step_size = 1000
       minimum_scaling_step_size = 1
       status                    = "ENABLED"
-      target_capacity           = 60
+      target_capacity           = 100
     }
   }
 }
@@ -90,6 +91,14 @@ resource "aws_ecs_task_definition" "this" {
           name      = "DB_NAME",
           valueFrom = "${local.database_credentials}:db::"
         },
+        {
+          name      = "SPOTIFY_CLIENT_ID",
+          valueFrom = "${local.spotify_credentials}:clientId::"
+        },
+        {
+          name      = "SPOTIFY_CLIENT_SECRET",
+          valueFrom = "${local.spotify_credentials}:clientSecret::"
+        },
       ],
       environment = [
         { name = "DB_SCHEME", value = "cockroachdb" },
@@ -99,7 +108,9 @@ resource "aws_ecs_task_definition" "this" {
         { name = "SMTP_FROM_NAME", value = var.email_user_from_name },
         { name = "REGISTRATION_VERIFICATION_URL", value = "https://${local.domain_name}/${var.registration_verification_endpoint}" },
         { name = "EMAIL_CHANGE_VERIFICATION_URL", value = "https://${local.domain_name}/${var.email_change_verification_endpoint}" },
-      { name = "PASSWORD_RESET_VERIFICATION_URL", value = "https://${local.domain_name}/${var.password_reset_verification_endpoint}" }, ]
+        { name = "PASSWORD_RESET_VERIFICATION_URL", value = "https://${local.domain_name}/${var.password_reset_verification_endpoint}" },
+        { name = "SPOTIFY_CALLBACK_URI", value = "https://${local.domain_name}/" },
+      ]
     },
     {
       name = var.frontend_container_name
@@ -177,7 +188,7 @@ resource "aws_ecs_service" "this" {
   name            = "sotw-ecs-service-${var.env}"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.this.arn
-  desired_count   = 1 // TODO: REVISIT THIS BEFORE DEPLOYING FOR REAL
+  desired_count   = 2 // TODO: REVISIT THIS BEFORE DEPLOYING FOR REAL
 
   # network_configuration {
   #   subnets         = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]
@@ -186,9 +197,9 @@ resource "aws_ecs_service" "this" {
 
   force_new_deployment = true
 
-  placement_constraints {
-    type = "distinctInstance"
-  }
+  # placement_constraints {
+  #   type = "distinctInstance"
+  # }
 
   triggers = {
     redeployment = plantimestamp()
