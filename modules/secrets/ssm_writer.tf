@@ -21,3 +21,8 @@ resource "aws_ssm_parameter" "github_token" {
   type  = "String"
   value = aws_secretsmanager_secret.github_token.arn
 }
+resource "aws_ssm_parameter" "spotify_credentials" {
+  name  = "/secrets/spotify/credentials/arn"
+  type  = "String"
+  value = aws_secretsmanager_secret.spotify_credentials.arn
+}
