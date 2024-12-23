@@ -15,3 +15,9 @@ resource "aws_ssm_parameter" "db_credentials" {
   type  = "String"
   value = aws_secretsmanager_secret.db_credentials.arn
 }
+
+resource "aws_ssm_parameter" "spotify_credentials" {
+  name  = "/secrets/spotify/credentials/arn"
+  type  = "String"
+  value = aws_secretsmanager_secret.spotify_credentials.arn
+}
