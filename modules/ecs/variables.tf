@@ -55,3 +55,30 @@ variable "password_reset_verification_endpoint" {
   type    = string
   default = "password-reset/"
 }
+
+variable "send_registration_emails" {
+  type    = string
+  default = "true"
+}
+
+variable "app_off_time" {
+  type        = string
+  default     = "30 03"
+  description = "<MM> <HH> in UTC"
+}
+
+variable "app_on_time" {
+  type        = string
+  default     = "30 15"
+  description = "<MM> <HH> in UTC"
+}
+
+variable "minimum_ec2_instances" {
+  type    = number
+  default = 1
+}
+
+variable "maximum_ec2_instances" {
+  type    = number
+  default = 1
+}

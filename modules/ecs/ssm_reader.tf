@@ -18,6 +18,10 @@ data "aws_ssm_parameter" "database_credentials" {
   name = "/secrets/database/credentials/arn"
 }
 
+data "aws_ssm_parameter" "spotify_credentials" {
+  name = "/secrets/spotify/credentials/arn"
+}
+
 data "aws_ssm_parameter" "email_address" {
   name = "/email/send-from-address"
 }
