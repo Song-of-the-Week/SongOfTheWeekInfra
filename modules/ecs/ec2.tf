@@ -68,9 +68,9 @@ data "aws_ami" "amazon_linux_2" {
 
 resource "aws_autoscaling_group" "ecs_asg" {
   vpc_zone_identifier = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]
-  #   desired_capacity    = 3
-  max_size = 1 // TODO: REVISIT
-  min_size = 1
+  desired_capacity    = 1
+  min_size            = var.minimum_ec2_instances
+  max_size            = var.maximum_ec2_instances
 
   launch_template {
     id      = aws_launch_template.ecs_lt.id
@@ -83,6 +83,24 @@ resource "aws_autoscaling_group" "ecs_asg" {
     propagate_at_launch = true
   }
 }
+
+# TODO: Revisit and fix autoscaling issue
+# resource "aws_autoscaling_schedule" "on" {
+#   scheduled_action_name  = "sotw-ecs-ec2-schedule-on-${var.env}"
+#   min_size               = var.minimum_ec2_instances
+#   max_size               = var.maximum_ec2_instances
+#   desired_capacity       = 1
+#   recurrence             = "${var.app_on_time} * * *"
+#   autoscaling_group_name = aws_autoscaling_group.ecs_asg.name
+# }
+# resource "aws_autoscaling_schedule" "off" {
+#   scheduled_action_name  = "sotw-ecs-ec2-schedule-off-${var.env}"
+#   min_size               = 0
+#   max_size               = 0
+#   desired_capacity       = 0
+#   recurrence             = "${var.app_off_time} * * *"
+#   autoscaling_group_name = aws_autoscaling_group.ecs_asg.name
+# }
 
 data "aws_secretsmanager_secret" "ec2_public_key" {
   arn = data.aws_ssm_parameter.ec2_pub_arn.value

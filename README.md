@@ -27,6 +27,12 @@ In the future these might be CloudFormation templates!
     * Manually upload the secrets to the public and private secrets
 
 * Manually register domain in Route53. You will need to access that in the `network/r53.tf` file
-* * Add this domain to Systems Manager Parameter store at /route53/domain
+ * Add this domain to Systems Manager Parameter store at `/route53/domain`
 
-* Manually register your AWS SES domain. Place it in /email/send-from-address as a string in Systems Manager Parameter Store.
+* Manually register your AWS SES domain. Place it in `/email/send-from-address `as a string in Systems Manager Parameter Store.
+
+* For CodeBuild, you need to provide an access token for GitHub. This can be any GitHub user, but we highly recommend creating an account exclusively for programmatic access. Create it (here)[https://github.com/settings/tokens?type=beta] and add the value to `/github/token` as a string.
+
+* You must manually add your Spotify Client ID and Secret to `spotify/credentials` by filling out `clientId` and `clientSecret` in a JSON format.
+
+* For CodeBuild, you must complete the CodeBuild GitHub connection (here)[https://us-east-2.console.aws.amazon.com/codesuite/settings/connection]

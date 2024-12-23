@@ -1,6 +1,7 @@
 locals {
   cluster_name         = "sotw-cluster-${var.env}"
   database_credentials = data.aws_ssm_parameter.database_credentials.value
+  spotify_credentials  = data.aws_ssm_parameter.spotify_credentials.value
   email_address        = data.aws_ssm_parameter.email_address.value
   domain_name          = data.aws_ssm_parameter.domain_name.value
   api_version_tag      = data.aws_ssm_parameter.ecs_api_version.value
@@ -22,7 +23,7 @@ resource "aws_ecs_capacity_provider" "this" {
       maximum_scaling_step_size = 1000
       minimum_scaling_step_size = 1
       status                    = "ENABLED"
-      target_capacity           = 60
+      target_capacity           = 50
     }
   }
 }
@@ -43,7 +44,7 @@ resource "aws_ecs_task_definition" "this" {
   family             = "sotw-ecs-task-definition-${var.env}"
   network_mode       = "bridge"
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-  cpu                = 768
+  cpu                = 384
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -90,23 +91,35 @@ resource "aws_ecs_task_definition" "this" {
           name      = "DB_NAME",
           valueFrom = "${local.database_credentials}:db::"
         },
+        {
+          name      = "SPOTIFY_CLIENT_ID",
+          valueFrom = "${local.spotify_credentials}:clientId::"
+        },
+        {
+          name      = "SPOTIFY_CLIENT_SECRET",
+          valueFrom = "${local.spotify_credentials}:clientSecret::"
+        },
       ],
       environment = [
         { name = "DB_SCHEME", value = "cockroachdb" },
         { name = "BACKEND_CORS_ORIGINS", value = "[\"http://127.0.0.1:8000\", \"http://127.0.0.1:8080\"]" },
         { name = "COOKIE_SECURE_SETTING", value = "TRUE" },
+        { name = "COOKIE_SAMESITE_SETTING", value = "none" }, # address before rolling out
         { name = "SMTP_FROM", value = "${var.email_user}@${local.email_address}" },
         { name = "SMTP_FROM_NAME", value = var.email_user_from_name },
         { name = "REGISTRATION_VERIFICATION_URL", value = "https://${local.domain_name}/${var.registration_verification_endpoint}" },
         { name = "EMAIL_CHANGE_VERIFICATION_URL", value = "https://${local.domain_name}/${var.email_change_verification_endpoint}" },
-      { name = "PASSWORD_RESET_VERIFICATION_URL", value = "https://${local.domain_name}/${var.password_reset_verification_endpoint}" }, ]
+        { name = "PASSWORD_RESET_VERIFICATION_URL", value = "https://${local.domain_name}/${var.password_reset_verification_endpoint}" },
+        { name = "SPOTIFY_CALLBACK_URI", value = "https://${local.domain_name}/" },
+        { name = "SEND_REGISTRATION_EMAILS", value = var.send_registration_emails },
+      ]
     },
     {
       name = var.frontend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
       image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:${local.frontend_version_tag}"
       cpu       = 128
-      memory    = 850
+      memory    = 1024
       essential = true
       portMappings = [
         {
@@ -186,9 +199,9 @@ resource "aws_ecs_service" "this" {
 
   force_new_deployment = true
 
-  placement_constraints {
-    type = "distinctInstance"
-  }
+  # placement_constraints {
+  #   type = "distinctInstance"
+  # }
 
   triggers = {
     redeployment = plantimestamp()
