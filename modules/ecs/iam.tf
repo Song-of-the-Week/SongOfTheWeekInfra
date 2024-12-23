@@ -73,26 +73,6 @@ resource "aws_iam_role" "ecs_task_execution_role" {
     ]
   })
 
-  #   inline_policy {
-  #     name = "private-registry-auth"
-
-  #     policy = jsonencode({
-  #       "Version" : "2012-10-17",
-  #       "Statement" : [
-  #         {
-  #           "Effect" : "Allow",
-  #           "Action" : [
-  #             "kms:Decrypt",
-  #             "secretsmanager:GetSecretValue"
-  #           ],
-  #           "Resource" : [
-  #             "arn:aws:secretsmanager:*:${var.env}:secret:secret_name",
-  #             "arn:aws:kms:*:${var.env}:key/key_id"
-  #           ]
-  #         }
-  #       ]
-  #     })
-  #   }
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_policy_attachment" {
