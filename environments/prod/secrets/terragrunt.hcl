@@ -1,5 +1,5 @@
 include "root" {
-  path = find_in_parent_folders()
+  path = find_in_parent_folders("root.hcl")
 }
 
 
@@ -10,8 +10,6 @@ terraform {
     commands = ["plan", "apply"]
 
     arguments = [
-      "-var-file=account.tfvars",
-      "-var-file=region.tfvars"
     ]
   }
 }
