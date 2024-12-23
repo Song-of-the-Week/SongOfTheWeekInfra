@@ -55,7 +55,7 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.backend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-prod:${local.api_version_tag}"
+      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-prod:${local.api_version_tag}"
       cpu       = 128
       memory    = 128
       essential = true
@@ -117,7 +117,7 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.frontend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:${local.frontend_version_tag}"
+      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:${local.frontend_version_tag}"
       cpu       = 128
       memory    = 1024
       essential = true
@@ -150,7 +150,7 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.proxy_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "471112828417.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-prod:${local.nginx_version_tag}"
+      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-prod:${local.nginx_version_tag}"
       cpu       = 128
       memory    = 16
       essential = true
