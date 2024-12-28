@@ -10,3 +10,7 @@ variable "repo_path" {
   type    = string
   default = "Song-of-the-Week/sotw-web-app"
 }
+
+variable "assume_role_name" {
+  type = string
+}
