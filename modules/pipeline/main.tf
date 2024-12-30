@@ -3,12 +3,27 @@ resource "aws_codepipeline" "codepipeline" {
   role_arn = aws_iam_role.codepipeline_role.arn
 
   artifact_store {
-    location = aws_s3_bucket.codepipeline_bucket.bucket
+    location = aws_s3_bucket.codepipeline_bucket.arn
     type     = "S3"
 
     encryption_key {
       id   = data.aws_kms_alias.s3kmskey.arn
       type = "KMS"
+    }
+  }
+
+  trigger {
+    provider_type = "CodeStarSourceConnection"
+    git_configuration {
+      source_action_name = "ApplicationSource"
+      push {
+        branches {
+          includes = ["main"]
+        }
+        tags {
+          includes = ["^v\\d+\\.\\d+\\.\\d+$"]
+        }
+      }
     }
   }
 
@@ -44,7 +59,7 @@ resource "aws_codepipeline" "codepipeline" {
       version          = "1"
 
       configuration = {
-        ProjectName = "test"
+        ProjectName = "sotw-build-${var.env}"
       }
     }
   }
@@ -56,7 +71,7 @@ resource "aws_codepipeline" "codepipeline" {
       name            = "Deploy"
       category        = "Deploy"
       owner           = "AWS"
-      provider        = "CloudFormation"
+      provider        = "ECS"
       input_artifacts = ["build_output"]
       version         = "1"
 
@@ -85,7 +100,7 @@ resource "aws_s3_bucket_public_access_block" "codepipeline_bucket_pab" {
   restrict_public_buckets = true
 }
 
-data "aws_iam_policy_document" "assume_role" {
+data "aws_iam_policy_document" "assume_role_pipeline" {
   statement {
     effect = "Allow"
 
@@ -100,7 +115,7 @@ data "aws_iam_policy_document" "assume_role" {
 
 resource "aws_iam_role" "codepipeline_role" {
   name               = "test-role"
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.assume_role_pipeline.json
 }
 
 data "aws_iam_policy_document" "codepipeline_policy" {
