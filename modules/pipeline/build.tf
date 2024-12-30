@@ -1,7 +1,7 @@
 locals {
-    subnet_1a = data.aws_ssm_parameter.subnet_1a_id.value
-    subnet_1b = data.aws_ssm_parameter.subnet_1b_id.value
-    vpc_id = data.aws_ssm_parameter.vpc_id.value
+  codebuild_subnet_arn = data.aws_ssm_parameter.codebuild_subnet_arn.value
+  # codebuild_subnet_id  = data.aws_ssm_parameter.codebuild_subnet_id.value
+  vpc_id = data.aws_ssm_parameter.vpc_id.value
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -18,8 +18,15 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 resource "aws_security_group" "this" {
-    name = "codebuild-security-group-${var.env}"
-    vpc_id = local.vpc_id
+  name   = "codebuild-${var.env}"
+  vpc_id = local.vpc_id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 resource "aws_iam_role" "codebuild" {
@@ -66,8 +73,7 @@ data "aws_iam_policy_document" "codebuild_policy_document" {
       variable = "ec2:Subnet"
 
       values = [
-        local.subnet_1a,
-        local.subnet_1b,
+        local.codebuild_subnet_arn
       ]
     }
 
@@ -86,6 +92,48 @@ data "aws_iam_policy_document" "codebuild_policy_document" {
       "${aws_s3_bucket.codepipeline_bucket.arn}/*",
     ]
   }
+
+  statement {
+    effect  = "Allow"
+    actions = ["ssm:GetParamter", "ssm:GetParamters"]
+    resources = [
+      "arn:aws:ssm:*:${var.account_id}:parameter/ecr/*"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:BatchGetImage",
+      "ecr:PutImage",
+      "ecr:InitiateLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:CompleteLayerUpload"
+    ]
+    // TODO: if this wasn't hardcoded it would be best
+    resources = [
+      "arn:aws:ecr:*:${var.account_id}:repository/sotw-api-repo-prod",
+      "arn:aws:ecr:*:${var.account_id}:repository/sotw-frontend-repo-prod",
+      "arn:aws:ecr:*:${var.account_id}:repository/sotw-nginx-repo-prod",
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecr:GetAuthorizationToken",
+    ]
+    resources = [
+      "*"
+    ]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["codestar-connections:UseConnection"]
+    resources = [aws_codestarconnections_connection.this.arn]
+  }
 }
 
 resource "aws_iam_role_policy" "codeuild_role_policy" {
@@ -100,7 +148,7 @@ resource "aws_codebuild_project" "this" {
   service_role  = aws_iam_role.codebuild.arn
 
   artifacts {
-    type = "NO_ARTIFACTS"
+    type = "CODEPIPELINE"
   }
 
   cache {
@@ -119,6 +167,11 @@ resource "aws_codebuild_project" "this" {
     #   value = "SOME_VALUE1"
     # }
 
+    environment_variable {
+      name  = "AWS_ACCOUNT_ID"
+      value = var.account_id
+    }
+
     # environment_variable {
     #   name  = "SOME_KEY2"
     #   value = "SOME_VALUE2"
@@ -130,6 +183,7 @@ resource "aws_codebuild_project" "this" {
     cloudwatch_logs {
       group_name  = "codebuild-${var.env}"
       stream_name = "codebuild-${var.env}"
+      status      = "ENABLED"
     }
 
     s3_logs {
@@ -142,28 +196,25 @@ resource "aws_codebuild_project" "this" {
     # type            = "GITHUB"
     # location        = "https://github.com/mitchellh/packer.git"
     # git_clone_depth = 1
-    type = "S3"
-    
+    type = "CODEPIPELINE"
 
-    git_submodules_config {
-      fetch_submodules = true
-    }
+
+    # git_submodules_config {
+    #   fetch_submodules = true
+    # }
   }
 
-  source_version = "master"
+  # vpc_config {
+  #   vpc_id = local.vpc_id
 
-  vpc_config {
-    vpc_id = local.vpc_id
+  #   subnets = [
+  #     local.codebuild_subnet_id,
+  #   ]
 
-    subnets = [
-        local.subnet_1a,
-        local.subnet_1b,
-    ]
-
-    security_group_ids = [
-      aws_security_group.this.id
-    ]
-  }
+  #   security_group_ids = [
+  #     aws_security_group.this.id
+  #   ]
+  # }
 
   tags = {
     Environment = var.env

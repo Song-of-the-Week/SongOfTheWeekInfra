@@ -14,3 +14,8 @@ variable "repo_path" {
 variable "assume_role_name" {
   type = string
 }
+
+variable "build_branch" {
+  type    = string
+  default = "main"
+}

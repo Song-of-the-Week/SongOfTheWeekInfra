@@ -15,3 +15,15 @@ resource "aws_ssm_parameter" "ecs_nginx_version" {
   type  = "String"
   value = "latest"
 }
+
+resource "aws_ssm_parameter" "ecs_cluster_name" {
+  name  = "/ecs/cluster-name"
+  type  = "String"
+  value = aws_ecs_cluster.this.name
+}
+
+resource "aws_ssm_parameter" "ecs_service_name" {
+  name  = "/ecs/primary-service-name"
+  type  = "String"
+  value = aws_ecs_service.this.name
+}
