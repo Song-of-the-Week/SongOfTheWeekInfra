@@ -197,7 +197,7 @@ resource "aws_ecs_service" "this" {
   #   security_groups = [data.aws_ssm_parameter.sg_id.value]
   # }
 
-  force_new_deployment = true
+  force_new_deployment = false
 
   # placement_constraints {
   #   type = "distinctInstance"
