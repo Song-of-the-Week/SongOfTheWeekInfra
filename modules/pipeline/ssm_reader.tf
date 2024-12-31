@@ -2,9 +2,6 @@ data "aws_ssm_parameter" "github_token" {
   name = "/secrets/github/token/arn"
 }
 
-# data "aws_ssm_parameter" "codebuild_subnet_id" {
-#   name = "/network/codebuild-subnet/id"
-# }
 data "aws_ssm_parameter" "codebuild_subnet_arn" {
   name = "/network/codebuild-subnet/arn"
 }

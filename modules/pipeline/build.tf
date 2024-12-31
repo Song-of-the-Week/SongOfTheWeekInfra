@@ -1,7 +1,6 @@
 locals {
   codebuild_subnet_arn = data.aws_ssm_parameter.codebuild_subnet_arn.value
-  # codebuild_subnet_id  = data.aws_ssm_parameter.codebuild_subnet_id.value
-  vpc_id = data.aws_ssm_parameter.vpc_id.value
+  vpc_id               = data.aws_ssm_parameter.vpc_id.value
 }
 
 resource "aws_codebuild_project" "this" {
