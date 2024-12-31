@@ -19,3 +19,12 @@ variable "build_branch" {
   type    = string
   default = "main"
 }
+
+variable "version_parameters" {
+  type = list(string)
+  default = [
+    "ecs/frontend/image-version",
+    "ecs/api/image-version",
+    "ecs/nginx/image-version"
+  ]
+}

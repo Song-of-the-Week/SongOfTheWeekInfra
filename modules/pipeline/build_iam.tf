@@ -4,9 +4,14 @@ resource "aws_iam_role" "codebuild" {
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
-resource "aws_iam_role_policy" "codeuild_role_policy" {
+resource "aws_iam_role_policy" "codebuild_role_policy" {
   role   = aws_iam_role.codebuild.name
   policy = data.aws_iam_policy_document.codebuild_policy_document.json
+}
+
+resource "aws_iam_role_policy_attachment" "codebuild_write_params" {
+  role       = aws_iam_role.codebuild.name
+  policy_arn = aws_iam_policy.update_version_params.arn
 }
 
 data "aws_iam_policy_document" "codebuild_policy_document" {
@@ -38,7 +43,6 @@ data "aws_iam_policy_document" "codebuild_policy_document" {
       "arn:aws:ssm:*:${var.account_id}:parameter/ecr/*"
     ]
   }
-
   statement {
     effect = "Allow"
     actions = [
@@ -72,6 +76,23 @@ data "aws_iam_policy_document" "codebuild_policy_document" {
     actions   = ["codestar-connections:UseConnection"]
     resources = [aws_codestarconnections_connection.this.arn]
   }
+}
+
+resource "aws_iam_policy" "update_version_params" {
+  name = "update-version-params-${var.env}"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      for v in var.version_parameters : {
+        Effect = "Allow"
+        Action = [
+          "ssm:PutParameter",
+          "ssm:AddTagsToResource"
+        ]
+        Resource = "arn:aws:ssm:*:${var.account_id}:parameter/${v}",
+      }
+    ]
+  })
 }
 
 
