@@ -22,7 +22,6 @@ resource "aws_ssm_parameter" "db_subnet_1a_id" {
   type  = "String"
   value = aws_subnet.db_1a.id
 }
-
 resource "aws_ssm_parameter" "ecs_security_group_id" {
   name  = "/network/ecs-sg/id"
   type  = "String"
@@ -39,6 +38,11 @@ resource "aws_ssm_parameter" "ecs_subnet_1b_id" {
   name  = "/network/ecs-subnet-1b/id"
   type  = "String"
   value = aws_subnet.ecs_1b.id
+}
+resource "aws_ssm_parameter" "ecs_subnet_1b_arn" {
+  name  = "/network/ecs-subnet-1b/arn"
+  type  = "String"
+  value = aws_subnet.ecs_1b.arn
 }
 
 resource "aws_ssm_parameter" "ecs_tg_id" {
