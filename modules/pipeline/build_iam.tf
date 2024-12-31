@@ -23,43 +23,6 @@ data "aws_iam_policy_document" "codebuild_policy_document" {
   }
 
   statement {
-    effect = "Allow"
-
-    actions = [
-      "ec2:CreateNetworkInterface",
-      "ec2:DescribeDhcpOptions",
-      "ec2:DescribeNetworkInterfaces",
-      "ec2:DeleteNetworkInterface",
-      "ec2:DescribeSubnets",
-      "ec2:DescribeSecurityGroups",
-      "ec2:DescribeVpcs",
-    ]
-
-    resources = ["*"]
-  }
-
-  statement {
-    effect    = "Allow"
-    actions   = ["ec2:CreateNetworkInterfacePermission"]
-    resources = ["arn:aws:ec2:us-east-1:${var.account_id}:network-interface/*"]
-
-    condition {
-      test     = "StringEquals"
-      variable = "ec2:Subnet"
-
-      values = [
-        local.codebuild_subnet_arn
-      ]
-    }
-
-    condition {
-      test     = "StringEquals"
-      variable = "ec2:AuthorizedService"
-      values   = ["codebuild.amazonaws.com"]
-    }
-  }
-
-  statement {
     effect  = "Allow"
     actions = ["s3:*"]
     resources = [
