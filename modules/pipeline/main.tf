@@ -24,7 +24,7 @@ resource "aws_codepipeline" "codepipeline" {
       source_action_name = "Source"
       push {
         tags {
-          includes = ["v[0-9]+\\.[0-9]+\\.[0-9]+"]
+          includes = ["v[0-9]*\\.[0-9]*\\.[0-9]*"]
         }
       }
     }
