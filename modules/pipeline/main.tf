@@ -23,12 +23,12 @@ resource "aws_codepipeline" "codepipeline" {
     git_configuration {
       source_action_name = "Source"
       push {
-        branches {
-          includes = [var.build_branch]
-        }
-        # tags {
-        #   includes = ["^v\\d+\\.\\d+\\.\\d+$"]
+        # branches {
+        #   includes = [var.build_branch]
         # }
+        tags {
+          includes = ["v[0-9]*\\.[0-9]*\\.[0-9]*"]
+        }
       }
     }
   }

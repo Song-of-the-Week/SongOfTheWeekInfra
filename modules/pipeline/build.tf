@@ -95,7 +95,7 @@ data "aws_iam_policy_document" "codebuild_policy_document" {
 
   statement {
     effect  = "Allow"
-    actions = ["ssm:GetParamter", "ssm:GetParamters"]
+    actions = ["ssm:GetParameter", "ssm:GetParameters"]
     resources = [
       "arn:aws:ssm:*:${var.account_id}:parameter/ecr/*"
     ]
