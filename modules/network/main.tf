@@ -40,16 +40,6 @@ resource "aws_subnet" "ecs_1b" {
   }
 }
 
-resource "aws_subnet" "codebuild_1a" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.32.0/27"
-  map_public_ip_on_launch = true
-  availability_zone       = "us-east-1a"
-  tags = {
-    Name = "codebuild-${var.env}"
-  }
-}
-
 resource "aws_internet_gateway" "internet_gateway" {
   vpc_id = aws_vpc.main.id
   tags = {

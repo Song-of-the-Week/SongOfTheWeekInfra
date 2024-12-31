@@ -27,10 +27,3 @@ resource "aws_route_table" "route_table_private" {
     Name = "private-route-table-${var.env}"
   }
 }
-
-resource "aws_route_table_association" "subnet_codebuild_route" {
-  subnet_id      = aws_subnet.codebuild_1a.id
-  route_table_id = aws_route_table.route_table_private.id
-
-
-}
