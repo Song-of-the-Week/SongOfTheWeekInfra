@@ -162,21 +162,10 @@ resource "aws_codebuild_project" "this" {
     type                        = "LINUX_CONTAINER"
     image_pull_credentials_type = "CODEBUILD"
 
-    # environment_variable {
-    #   name  = "SOME_KEY1"
-    #   value = "SOME_VALUE1"
-    # }
-
     environment_variable {
       name  = "AWS_ACCOUNT_ID"
       value = var.account_id
     }
-
-    # environment_variable {
-    #   name  = "SOME_KEY2"
-    #   value = "SOME_VALUE2"
-    #   type  = "PARAMETER_STORE"
-    # }
   }
 
   logs_config {
@@ -193,28 +182,8 @@ resource "aws_codebuild_project" "this" {
   }
 
   source {
-    # type            = "GITHUB"
-    # location        = "https://github.com/mitchellh/packer.git"
-    # git_clone_depth = 1
     type = "CODEPIPELINE"
-
-
-    # git_submodules_config {
-    #   fetch_submodules = true
-    # }
   }
-
-  # vpc_config {
-  #   vpc_id = local.vpc_id
-
-  #   subnets = [
-  #     local.codebuild_subnet_id,
-  #   ]
-
-  #   security_group_ids = [
-  #     aws_security_group.this.id
-  #   ]
-  # }
 
   tags = {
     Environment = var.env
