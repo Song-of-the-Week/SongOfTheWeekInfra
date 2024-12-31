@@ -91,7 +91,6 @@ resource "aws_autoscaling_schedule" "on" {
   desired_capacity       = 1
   recurrence             = "${var.app_on_time} * * *"
   autoscaling_group_name = aws_autoscaling_group.ecs_asg.name
-
 }
 resource "aws_autoscaling_schedule" "off" {
   scheduled_action_name  = "sotw-ecs-ec2-schedule-off-${var.env}"

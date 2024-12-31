@@ -1,38 +1,48 @@
 resource "aws_security_group" "ecs" {
- name   = "ecs"
- vpc_id = aws_vpc.main.id
+  name   = "ecs"
+  vpc_id = aws_vpc.main.id
 
- ingress {
-   from_port   = 0
-   to_port     = 0
-   protocol    = -1
-   self        = "false"
-   cidr_blocks = ["0.0.0.0/0"]
-   description = "any"
- }
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
+    description     = "traffic from ALB"
+  }
 
- egress {
-   from_port   = 0
-   to_port     = 0
-   protocol    = "-1"
-   cidr_blocks = ["0.0.0.0/0"]
- }
-}
-
-resource "aws_security_group" "db" {
-  name        = "db"
-  description = "Allow TLS inbound traffic and all outbound traffic"
-  vpc_id      = aws_vpc.main.id
-
-  tags = {
-    Name = "db"
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
-  security_group_id = aws_security_group.db.id
-  cidr_ipv4         = aws_vpc.main.cidr_block
-  from_port         = 443
-  ip_protocol       = "tcp"
-  to_port           = 443
+resource "aws_security_group" "alb" {
+  name   = "alb-sg-${var.env}"
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    self        = "false"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTPS Traffic"
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTP Traffic (For Redirect)"
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }

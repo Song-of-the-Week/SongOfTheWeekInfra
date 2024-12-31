@@ -8,18 +8,6 @@ resource "aws_vpc" "main" {
   }
 }
 
-resource "aws_subnet" "db_1c" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.128.0/20"
-  availability_zone = "us-east-1c"
-}
-
-resource "aws_subnet" "db_1a" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.192.0/20"
-  availability_zone = "us-east-1a"
-}
-
 resource "aws_subnet" "ecs_1a" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.0.0/20"
