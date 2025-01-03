@@ -10,6 +10,14 @@ resource "aws_security_group" "ecs" {
     description     = "traffic from ALB"
   }
 
+  ingress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = -1
+    security_groups = [aws_security_group.vpc_link.id]
+    description     = "traffic from ALB"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -45,4 +53,10 @@ resource "aws_security_group" "alb" {
     protocol    = -1
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_security_group" "vpc_link" {
+  name        = "vpc-link-${var.env}"
+  description = "vpc link"
+  vpc_id      = aws_vpc.main.id
 }

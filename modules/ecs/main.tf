@@ -7,10 +7,19 @@ locals {
   api_version_tag      = data.aws_ssm_parameter.ecs_api_version.value
   frontend_version_tag = data.aws_ssm_parameter.ecs_frontend_version.value
   nginx_version_tag    = data.aws_ssm_parameter.ecs_nginx_version.value
+  vpc_id               = data.aws_ssm_parameter.vpc_id.value
 }
 
 resource "aws_ecs_cluster" "this" {
   name = local.cluster_name
+
+  service_connect_defaults {
+    namespace = aws_service_discovery_private_dns_namespace.this.arn
+  }
+  setting {
+    name  = "containerInsights"
+    value = "disabled"
+  }
 }
 
 resource "aws_ecs_capacity_provider" "this" {
@@ -42,7 +51,7 @@ resource "aws_ecs_cluster_capacity_providers" "this" {
 
 resource "aws_ecs_task_definition" "this" {
   family             = "sotw-ecs-task-definition-${var.env}"
-  network_mode       = "bridge"
+  network_mode       = "awsvpc"
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
   cpu                = 384
 
@@ -156,6 +165,7 @@ resource "aws_ecs_task_definition" "this" {
       essential = true
       portMappings = [
         {
+          name          = "proxy"
           containerPort = 80
           protocol      = "tcp"
         }
@@ -179,9 +189,9 @@ resource "aws_ecs_task_definition" "this" {
           awslogs-create-group  = "true"
         }
       },
-      links = [
-        var.frontend_container_name, var.backend_container_name
-      ]
+      # links = [
+      #   var.frontend_container_name, var.backend_container_name
+      # ]
     },
   ])
 }
@@ -218,5 +228,22 @@ resource "aws_ecs_service" "this" {
     container_port   = 80
   }
 
+  service_connect_configuration {
+    enabled = true
+    service {
+      port_name      = "proxy"
+      discovery_name = "sotw-${var.env}"
+      client_alias {
+        port = 80
+      }
+    }
+
+  }
+
   depends_on = [aws_autoscaling_group.ecs_asg]
+}
+
+resource "aws_service_discovery_private_dns_namespace" "this" {
+  name = "sotw-${var.env}"
+  vpc  = local.vpc_id
 }
