@@ -54,8 +54,6 @@ resource "aws_iam_role_policy_attachment" "ecs_instance_service_policy" {
 
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
-
-
 resource "aws_iam_role" "ecs_task_execution_role" {
   name = "sotw-ecs-task-execution-role-${var.env}"
 
@@ -106,8 +104,7 @@ resource "aws_iam_policy" "this" {
         ]
         Effect = "Allow"
       }
-    ]
-    Statement = [
+      ,
       {
         Action = [
           "kms:Decrypt",
@@ -117,6 +114,15 @@ resource "aws_iam_policy" "this" {
           data.aws_ssm_parameter.database_credentials.value,
           data.aws_ssm_parameter.spotify_credentials.value,
           "arn:aws:kms:*:${var.env}:key/key_id"
+        ]
+        Effect = "Allow"
+      },
+      {
+        Action = [
+          "servicediscovery:DiscoverInstances",
+        ]
+        Resource = [
+          "*"
         ]
         Effect = "Allow"
       }
