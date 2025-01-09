@@ -33,3 +33,7 @@ EOF
 resource "aws_secretsmanager_secret" "spotify_credentials" {
   name = "/spotify/credentials"
 }
+
+resource "aws_secretsmanager_secret" "github_token" {
+  name = "/secrets/github/token"
+}

@@ -4,6 +4,7 @@ AWS Infrastructure for the Song of the Week Project
 # Setup
 `make install`
 
+
 ## Configure Credentials in AWS
 For now, create an access key for the `terraform` IAM user. (We will make this better later)
 
@@ -26,8 +27,22 @@ In the future these might be CloudFormation templates!
     * Ensure you `terragrunt apply` on `deployments/<env>/secrets
     * Manually upload the secrets to the public and private secrets
 
+## Register Domains and Certificates
 * Manually register domain in Route53. You will need to access that in the `network/r53.tf` file
  * Add this domain to Systems Manager Parameter store at `/route53/domain`
+
+* Manually register for an AWS ACM Certificate for this domain. TODO: This should be configured as a parameter in parameter store in the future.
+
+Then, add to the terragrunt.hcl in your network directory under the proper environment like so:
+
+ ```
+    inputs = {
+        domain_name = "mydomain.com"
+        acm_cert_id = "839b2ee5-94dc-4b3f-8c6c-2af5f2023c6a"
+    }
+ ```
+## Set Up A Database
+We use (cockroachlabs)[cockroachlabs.cloud]. Configure a database there, and save the password to `/database/credentials` under password in Secrets Manager.
 
 * Manually register your AWS SES domain. Place it in `/email/send-from-address `as a string in Systems Manager Parameter Store.
 
