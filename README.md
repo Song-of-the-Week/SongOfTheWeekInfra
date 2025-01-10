@@ -44,10 +44,14 @@ Then, add to the terragrunt.hcl in your network directory under the proper envir
 ## Set Up A Database
 We use (cockroachlabs)[cockroachlabs.cloud]. Configure a database there, and save the password to `/database/credentials` under password in Secrets Manager.
 
-* Manually register your AWS SES domain. Place it in `/email/send-from-address `as a string in Systems Manager Parameter Store.
+* Manually register your AWS SES domain. Place it in `/email/send-from-address` as a string in Systems Manager Parameter Store.
 
 * For CodeBuild, you need to provide an access token for GitHub. This can be any GitHub user, but we highly recommend creating an account exclusively for programmatic access. Create it (here)[https://github.com/settings/tokens?type=beta] and add the value to `/github/token` as a string.
 
 * You must manually add your Spotify Client ID and Secret to `spotify/credentials` by filling out `clientId` and `clientSecret` in a JSON format.
 
 * For CodeBuild, you must complete the CodeBuild GitHub connection (here)[https://us-east-2.console.aws.amazon.com/codesuite/settings/connection]
+
+## ECR Prerequisites
+
+Our current setup requires an intial set of images to exist in ECR at the specified repositores. Build the app for production from the application repo using `make ENV=prod docker-build` in that repository, then push the images to the respective repos. You will not have to do this once the application has been built initially. 

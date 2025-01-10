@@ -6,6 +6,10 @@ dependencies {
   paths = ["../secrets", "../network", "../ecr"]
 }
 
+inputs = {
+  instance_type = "t3.micro"
+}
+
 
 terraform {
   source = "../../../modules/ecs/"

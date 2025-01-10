@@ -55,9 +55,9 @@ data "aws_iam_policy_document" "codebuild_policy_document" {
     ]
     // TODO: if this wasn't hardcoded it would be best
     resources = [
-      "arn:aws:ecr:*:${var.account_id}:repository/sotw-api-repo-prod",
-      "arn:aws:ecr:*:${var.account_id}:repository/sotw-frontend-repo-prod",
-      "arn:aws:ecr:*:${var.account_id}:repository/sotw-nginx-repo-prod",
+      "arn:aws:ecr:*:${var.account_id}:repository/sotw-api-repo-${var.env}",
+      "arn:aws:ecr:*:${var.account_id}:repository/sotw-frontend-repo-${var.env}",
+      "arn:aws:ecr:*:${var.account_id}:repository/sotw-nginx-repo-${var.env}",
     ]
   }
 

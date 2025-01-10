@@ -80,5 +80,10 @@ variable "minimum_ec2_instances" {
 
 variable "maximum_ec2_instances" {
   type    = number
-  default = 1
+  default = 2
+}
+
+variable "instance_type" {
+  type    = string
+  default = "t3a.small"
 }

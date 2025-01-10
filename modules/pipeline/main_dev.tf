@@ -1,10 +1,5 @@
-locals {
-  ecs_cluster_name = data.aws_ssm_parameter.ecs_cluster_name.value
-  ecs_service_name = data.aws_ssm_parameter.ecs_service_name.value
-}
-
-resource "aws_codepipeline" "codepipeline" {
-  count         = var.env == "dev" ? 0 : 1
+resource "aws_codepipeline" "codepipeline_dev" {
+  count         = var.env == "dev" ? 1 : 0
   name          = "sotw-pipeline-${var.env}"
   role_arn      = aws_iam_role.codepipeline_role.arn
   pipeline_type = "V2"
@@ -24,8 +19,8 @@ resource "aws_codepipeline" "codepipeline" {
     git_configuration {
       source_action_name = "Source"
       push {
-        tags {
-          includes = ["v[0-9]*\\.[0-9]*\\.[0-9]*"]
+        branches {
+          includes = ["main"]
         }
       }
     }
@@ -69,21 +64,6 @@ resource "aws_codepipeline" "codepipeline" {
     }
   }
 
-  stage {
-    name = "Approval"
-
-    action {
-      name     = "ManualApproval"
-      category = "Approval"
-      owner    = "AWS"
-      provider = "Manual"
-      version  = "1"
-
-      configuration = {
-        CustomData = "If you're an admin, approve this please :)"
-      }
-    }
-  }
 
   stage {
     name = "Deploy"
@@ -103,8 +83,4 @@ resource "aws_codepipeline" "codepipeline" {
       }
     }
   }
-}
-
-data "aws_kms_alias" "s3kmskey" {
-  name = "alias/aws/s3"
 }
