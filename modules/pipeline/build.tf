@@ -27,6 +27,11 @@ resource "aws_codebuild_project" "this" {
       name  = "AWS_ACCOUNT_ID"
       value = var.account_id
     }
+
+    environment_variable {
+      name  = "ENV"
+      value = var.env
+    }
   }
 
   logs_config {

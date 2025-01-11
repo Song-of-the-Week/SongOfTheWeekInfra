@@ -4,7 +4,6 @@ locals {
 }
 
 resource "aws_codepipeline" "codepipeline" {
-  count         = var.env == "dev" ? 0 : 1
   name          = "sotw-pipeline-${var.env}"
   role_arn      = aws_iam_role.codepipeline_role.arn
   pipeline_type = "V2"
@@ -24,8 +23,17 @@ resource "aws_codepipeline" "codepipeline" {
     git_configuration {
       source_action_name = "Source"
       push {
-        tags {
-          includes = ["v[0-9]*\\.[0-9]*\\.[0-9]*"]
+        dynamic "tags" {
+          for_each = var.env == "prod" ? ["prod-builds-off-tags"] : []
+          content {
+            includes = ["v[0-9]*\\.[0-9]*\\.[0-9]*"]
+          }
+        }
+        dynamic "branches" {
+          for_each = var.env == "dev" ? ["dev-builds-off-main"] : []
+          content {
+            includes = ["main"]
+          }
         }
       }
     }
@@ -69,18 +77,21 @@ resource "aws_codepipeline" "codepipeline" {
     }
   }
 
-  stage {
-    name = "Approval"
+  dynamic "stage" {
+    for_each = var.env == "prod" ? ["run-only-in-prod"] : []
+    content {
+      name = "Approval"
 
-    action {
-      name     = "ManualApproval"
-      category = "Approval"
-      owner    = "AWS"
-      provider = "Manual"
-      version  = "1"
+      action {
+        name     = "ManualApproval"
+        category = "Approval"
+        owner    = "AWS"
+        provider = "Manual"
+        version  = "1"
 
-      configuration = {
-        CustomData = "If you're an admin, approve this please :)"
+        configuration = {
+          CustomData = "If you're an admin, approve this please :)"
+        }
       }
     }
   }
