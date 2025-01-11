@@ -85,5 +85,5 @@ variable "maximum_ec2_instances" {
 
 variable "instance_type" {
   type    = string
-  default = "t3a.small"
+  default = "t3a.medium"
 }
