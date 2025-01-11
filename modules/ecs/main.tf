@@ -55,8 +55,8 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.backend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-prod:${local.api_version_tag}"
-      cpu       = 128
+      image = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-${var.env}:${local.api_version_tag}"
+      # cpu       = 128
       memory    = 128
       essential = true
       portMappings = [
@@ -117,10 +117,10 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.frontend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:${local.frontend_version_tag}"
-      cpu       = 128
-      memory    = 600
-      essential = true
+      image = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-${var.env}:${local.frontend_version_tag}"
+      # cpu               = 128
+      memoryReservation = 600
+      essential         = true
       portMappings = [
         {
           containerPort = 8080
@@ -154,8 +154,8 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.proxy_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-${var.env}:${local.nginx_version_tag}"
-      cpu       = 64
+      image = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-${var.env}:${local.nginx_version_tag}"
+      # cpu       = 64
       memory    = 64
       essential = true
       portMappings = [

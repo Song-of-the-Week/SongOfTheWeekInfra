@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Allocate a swap file (2 GB)
+# Allocate a swap file (5 GB)
 if [ ! -f /swapfile ]; then
-  fallocate -l 2G /swapfile
+  fallocate -l 5G /swapfile
   chmod 600 /swapfile
   mkswap /swapfile
 fi
