@@ -2,7 +2,6 @@ locals {
   cluster_name         = "sotw-cluster-${var.env}"
   database_credentials = data.aws_ssm_parameter.database_credentials.value
   spotify_credentials  = data.aws_ssm_parameter.spotify_credentials.value
-  email_address        = data.aws_ssm_parameter.email_address.value
   domain_name          = data.aws_ssm_parameter.domain_name.value
   api_version_tag      = data.aws_ssm_parameter.ecs_api_version.value
   frontend_version_tag = data.aws_ssm_parameter.ecs_frontend_version.value
@@ -32,7 +31,7 @@ resource "aws_ecs_capacity_provider" "this" {
       maximum_scaling_step_size = 1000
       minimum_scaling_step_size = 1
       status                    = "ENABLED"
-      target_capacity           = 50
+      target_capacity           = 100
     }
   }
 }
@@ -53,7 +52,7 @@ resource "aws_ecs_task_definition" "this" {
   family             = "sotw-ecs-task-definition-${var.env}"
   network_mode       = "awsvpc"
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-  cpu                = 384
+  cpu                = 320
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -64,8 +63,7 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.backend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-prod:${local.api_version_tag}"
-      cpu       = 128
+      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-${var.env}:${local.api_version_tag}"
       memory    = 128
       essential = true
       portMappings = [
@@ -114,7 +112,7 @@ resource "aws_ecs_task_definition" "this" {
         { name = "BACKEND_CORS_ORIGINS", value = "[\"http://127.0.0.1:8000\", \"http://127.0.0.1:8080\"]" },
         { name = "COOKIE_SECURE_SETTING", value = "TRUE" },
         { name = "COOKIE_SAMESITE_SETTING", value = "none" }, # address before rolling out
-        { name = "SMTP_FROM", value = "${var.email_user}@${local.email_address}" },
+        { name = "SMTP_FROM", value = "${var.email_user}@${local.domain_name}" },
         { name = "SMTP_FROM_NAME", value = var.email_user_from_name },
         { name = "REGISTRATION_VERIFICATION_URL", value = "https://${local.domain_name}/${var.registration_verification_endpoint}" },
         { name = "EMAIL_CHANGE_VERIFICATION_URL", value = "https://${local.domain_name}/${var.email_change_verification_endpoint}" },
@@ -124,12 +122,11 @@ resource "aws_ecs_task_definition" "this" {
       ]
     },
     {
-      name = var.frontend_container_name
-      // TODO: REPLACE THIS WITH REAL ECS
-      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:${local.frontend_version_tag}"
-      cpu       = 128
-      memory    = 1024
-      essential = true
+      name              = var.frontend_container_name
+      image             = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-${var.env}:${local.frontend_version_tag}"
+      memoryReservation = 600
+      essential         = true
+
       portMappings = [
         {
           containerPort = 8080
@@ -150,6 +147,14 @@ resource "aws_ecs_task_definition" "this" {
           awslogs-create-group  = "true"
         }
       },
+      linuxParameters = {
+        maxSwap    = 5120
+        swappiness = 10
+      }
+      linuxParameters = {
+        maxSwap    = 5120
+        swappiness = 10
+      }
       environment = [
         { name = "VUE_APP_HOSTNAME", value = "https://${local.domain_name}/" },
         { name = "VUE_APP_API_HOSTNAME", value = "https://${local.domain_name}/" },
@@ -159,9 +164,9 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.proxy_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-prod:${local.nginx_version_tag}"
-      cpu       = 128
-      memory    = 16
+      image  = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-${var.env}:${local.nginx_version_tag}"
+      memory = 64
+
       essential = true
       portMappings = [
         {
@@ -207,11 +212,11 @@ resource "aws_ecs_service" "this" {
   #   security_groups = [data.aws_ssm_parameter.sg_id.value]
   # }
 
-  force_new_deployment = false
+  force_new_deployment = true
 
-  # placement_constraints {
-  #   type = "distinctInstance"
-  # }
+  placement_constraints {
+    type = "distinctInstance"
+  }
 
   triggers = {
     redeployment = plantimestamp()

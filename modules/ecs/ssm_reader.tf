@@ -21,13 +21,8 @@ data "aws_ssm_parameter" "database_credentials" {
 data "aws_ssm_parameter" "spotify_credentials" {
   name = "/secrets/spotify/credentials/arn"
 }
-
-data "aws_ssm_parameter" "email_address" {
-  name = "/email/send-from-address"
-}
-
 data "aws_ssm_parameter" "domain_name" {
-  name = "/route53/domain"
+  name = "/network/domain/name"
 }
 
 data "aws_ssm_parameter" "ecs_api_version" {

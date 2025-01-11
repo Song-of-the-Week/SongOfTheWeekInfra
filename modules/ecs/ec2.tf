@@ -1,7 +1,7 @@
 resource "aws_launch_template" "ecs_lt" {
   name_prefix   = "ecs-template"
   image_id      = data.aws_ami.amazon_linux_2.id
-  instance_type = "t3a.medium"
+  instance_type = var.instance_type
 
   key_name = aws_key_pair.ec2_ecs_key.key_name
   #   vpc_security_group_ids = [data.aws_ssm_parameter.sg_id.value]
