@@ -57,6 +57,6 @@ resource "aws_lb_target_group" "ecs_tg" {
   health_check {
     path     = "/"
     timeout  = 30
-    interval = 120
+    interval = 240
   }
 }

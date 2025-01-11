@@ -23,7 +23,7 @@ resource "aws_ecs_capacity_provider" "this" {
       maximum_scaling_step_size = 1000
       minimum_scaling_step_size = 1
       status                    = "ENABLED"
-      target_capacity           = 50
+      target_capacity           = 100
     }
   }
 }
@@ -44,7 +44,7 @@ resource "aws_ecs_task_definition" "this" {
   family             = "sotw-ecs-task-definition-${var.env}"
   network_mode       = "bridge"
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-  cpu                = 384
+  cpu                = 320
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -55,8 +55,8 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.backend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-prod:${local.api_version_tag}"
-      cpu       = 128
+      image = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-api-repo-${var.env}:${local.api_version_tag}"
+      # cpu       = 128
       memory    = 128
       essential = true
       portMappings = [
@@ -117,10 +117,10 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.frontend_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:${local.frontend_version_tag}"
-      cpu       = 128
-      memory    = 1024
-      essential = true
+      image = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-${var.env}:${local.frontend_version_tag}"
+      # cpu               = 128
+      memoryReservation = 600
+      essential         = true
       portMappings = [
         {
           containerPort = 8080
@@ -141,6 +141,10 @@ resource "aws_ecs_task_definition" "this" {
           awslogs-create-group  = "true"
         }
       },
+      linuxParameters = {
+        maxSwap    = 5120
+        swappiness = 10
+      }
       environment = [
         { name = "VUE_APP_HOSTNAME", value = "https://${local.domain_name}/" },
         { name = "VUE_APP_API_HOSTNAME", value = "https://${local.domain_name}/" },
@@ -150,9 +154,9 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.proxy_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-prod:${local.nginx_version_tag}"
-      cpu       = 128
-      memory    = 16
+      image = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-${var.env}:${local.nginx_version_tag}"
+      # cpu       = 64
+      memory    = 64
       essential = true
       portMappings = [
         {
