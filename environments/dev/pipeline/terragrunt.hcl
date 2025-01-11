@@ -3,11 +3,12 @@ include "root" {
 }
 
 dependencies {
-  paths = ["../secrets"]
+  paths = ["../secrets", "../network", "../ecs"]
 }
 
+
 terraform {
-  source = "../../../modules/network/"
+  source = "../../../modules/pipeline/"
 
   extra_arguments "common_vars" {
     commands = ["plan", "apply"]

@@ -1,6 +1,6 @@
 inputs = {
-    env = "prod"
-    account_id = "471112828417"
+    env = "dev"
+    account_id = "418272759779"
     assume_role_name = "terraform"
 }
 
@@ -12,7 +12,7 @@ remote_state {
   }
 
   config = {
-    bucket         = "sotw-prod-terraform-state-management"
+    bucket         = "sotw-dev-terraform-state-management"
     key            = "${path_relative_to_include()}/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true

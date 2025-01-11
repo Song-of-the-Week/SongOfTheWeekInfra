@@ -33,3 +33,9 @@ resource "aws_ssm_parameter" "ecs_tg_id" {
   type  = "String"
   value = aws_lb_target_group.ecs_tg.id
 }
+
+resource "aws_ssm_parameter" "domain" {
+  name  = "/network/domain/name"
+  type  = "String"
+  value = var.domain_name
+}

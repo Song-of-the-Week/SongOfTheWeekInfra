@@ -33,7 +33,7 @@ resource "aws_iam_policy" "ecs_instance" {
           "ses:SendRawEmail"
         ]
         Resource = [
-          "arn:aws:ses:*:${var.account_id}:identity/${local.email_address}"
+          "arn:aws:ses:*:${var.account_id}:identity/${local.domain_name}"
         ]
         Effect = "Allow"
       }
@@ -105,9 +105,7 @@ resource "aws_iam_policy" "this" {
           "arn:aws:logs:*:${var.account_id}:log-group:*"
         ]
         Effect = "Allow"
-      }
-    ]
-    Statement = [
+      },
       {
         Action = [
           "kms:Decrypt",

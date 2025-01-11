@@ -3,11 +3,17 @@ include "root" {
 }
 
 dependencies {
-  paths = ["../secrets"]
+  paths = ["../secrets", "../network", "../ecr"]
 }
 
+inputs = {
+  instance_type = "t3.micro"
+  maximum_ec2_instances = 1
+}
+
+
 terraform {
-  source = "../../../modules/network/"
+  source = "../../../modules/ecs/"
 
   extra_arguments "common_vars" {
     commands = ["plan", "apply"]
