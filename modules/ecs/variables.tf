@@ -82,3 +82,8 @@ variable "maximum_ec2_instances" {
   type    = number
   default = 1
 }
+
+variable "instance_type" {
+  type    = string
+  default = "t3.medium"
+}

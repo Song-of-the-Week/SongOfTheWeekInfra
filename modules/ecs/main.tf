@@ -44,7 +44,7 @@ resource "aws_ecs_task_definition" "this" {
   family             = "sotw-ecs-task-definition-${var.env}"
   network_mode       = "bridge"
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-  cpu                = 384
+  cpu                = 320
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -119,7 +119,7 @@ resource "aws_ecs_task_definition" "this" {
       // TODO: REPLACE THIS WITH REAL ECS
       image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-frontend-repo-prod:${local.frontend_version_tag}"
       cpu       = 128
-      memory    = 1024
+      memory    = 600
       essential = true
       portMappings = [
         {
@@ -150,9 +150,9 @@ resource "aws_ecs_task_definition" "this" {
     {
       name = var.proxy_container_name
       // TODO: REPLACE THIS WITH REAL ECS
-      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-prod:${local.nginx_version_tag}"
-      cpu       = 128
-      memory    = 16
+      image     = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/sotw-nginx-repo-${var.env}:${local.nginx_version_tag}"
+      cpu       = 64
+      memory    = 64
       essential = true
       portMappings = [
         {
@@ -190,7 +190,7 @@ resource "aws_ecs_service" "this" {
   name            = "sotw-ecs-service-${var.env}"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.this.arn
-  desired_count   = 1 // TODO: REVISIT THIS BEFORE DEPLOYING FOR REAL
+  desired_count   = 0 // TODO: REVISIT THIS BEFORE DEPLOYING FOR REAL
 
   # network_configuration {
   #   subnets         = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]
