@@ -8,7 +8,7 @@ dependencies {
 
 inputs = {
   instance_type = "t3.micro"
-  maximum_ec2_instances = 1
+  maximum_ec2_instances = 3
 }
 
 
