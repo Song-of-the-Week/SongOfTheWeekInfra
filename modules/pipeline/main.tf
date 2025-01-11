@@ -32,7 +32,7 @@ resource "aws_codepipeline" "codepipeline" {
         dynamic "branches" {
           for_each = var.env == "dev" ? ["dev-builds-off-main"] : []
           content {
-            includes = ["main"]
+            includes = [var.build_branch]
           }
         }
       }
