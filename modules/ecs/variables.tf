@@ -61,6 +61,11 @@ variable "send_registration_emails" {
   default = "true"
 }
 
+variable "invite_token_expire_minutes" {
+  type = string
+  default = "10080"
+}
+
 variable "app_off_time" {
   type        = string
   default     = "30 03"
