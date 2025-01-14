@@ -39,3 +39,9 @@ resource "aws_ssm_parameter" "domain" {
   type  = "String"
   value = var.domain_name
 }
+
+resource "aws_ssm_parameter" "hosted_zone_id" {
+  name = "/network/hosted-zone/id"
+  type = "String"
+  value = data.aws_route53_zone.this.id
+}

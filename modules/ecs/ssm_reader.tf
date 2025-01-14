@@ -39,3 +39,8 @@ data "aws_ssm_parameter" "ecs_nginx_version" {
   name       = "/ecs/nginx/image-version"
   depends_on = [aws_ssm_parameter.ecs_nginx_version]
 }
+
+# data "aws_ssm_parameter" "hosted_zone_id" {
+#   name       = "/network/hosted-zone/id"
+# }
+

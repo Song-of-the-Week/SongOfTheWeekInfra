@@ -65,6 +65,26 @@ data "aws_ami" "amazon_linux_2" {
   owners = ["amazon"]
 }
 
+# resource "aws_instance" "ecs_instance" {
+#   launch_template {
+#     id = aws_launch_template.ecs_lt.id
+#     version = "$Latest"
+#   }
+#   subnet_id = data.aws_ssm_parameter.subnet_1a_id.value
+
+#   tags = {
+#     Name = "ecs-golden-instance-${var.env}"
+#   }
+
+#   user_data = base64encode(data.template_file.user_data.rendered)
+# }
+
+# resource "aws_eip" "ecs_instance_eip" {
+#   instance = aws_instance.ecs_instance.id
+#   tags = {
+#     Name = "ecs-instance-eip-${var.env}"
+#   }
+# }
 
 resource "aws_autoscaling_group" "ecs_asg" {
   vpc_zone_identifier = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]
