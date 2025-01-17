@@ -7,6 +7,18 @@ data "aws_ssm_parameter" "subnet_1a_id" {
 data "aws_ssm_parameter" "subnet_1b_id" {
   name = "/network/ecs-subnet-1b/id"
 }
+data "aws_ssm_parameter" "subnet_1c_id" {
+  name = "/network/ecs-subnet-1c/id"
+}
+data "aws_ssm_parameter" "subnet_1d_id" {
+  name = "/network/ecs-subnet-1d/id"
+}
+data "aws_ssm_parameter" "subnet_1e_id" {
+  name = "/network/ecs-subnet-1e/id"
+}
+data "aws_ssm_parameter" "subnet_1f_id" {
+  name = "/network/ecs-subnet-1f/id"
+}
 data "aws_ssm_parameter" "tg_id" {
   name = "/network/ecs-tg/id"
 }
@@ -36,6 +48,6 @@ data "aws_ssm_parameter" "ecs_frontend_version" {
 }
 
 data "aws_ssm_parameter" "ecs_nginx_version" {
-  name       = "/ecs/nginx/image-version"
-  depends_on = [aws_ssm_parameter.ecs_nginx_version]
+  name       = "/ecs/lets-encrypt-email"
+  depends_on = [aws_ssm_parameter.lets_encrypt_email]
 }

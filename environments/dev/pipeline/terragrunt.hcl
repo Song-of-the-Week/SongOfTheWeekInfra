@@ -6,6 +6,9 @@ dependencies {
   paths = ["../secrets", "../network", "../ecs"]
 }
 
+inputs = {
+  build_branhc
+}
 
 terraform {
   source = "../../../modules/pipeline/"

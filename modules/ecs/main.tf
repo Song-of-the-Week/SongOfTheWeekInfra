@@ -163,7 +163,11 @@ resource "aws_ecs_task_definition" "this" {
         {
           containerPort = 80
           protocol      = "tcp"
-        }
+        },
+        {
+          containerPort = 443
+          protocol      = "tcp"
+        },
       ],
       dependsOn = [
         {
@@ -188,6 +192,41 @@ resource "aws_ecs_task_definition" "this" {
         var.frontend_container_name, var.backend_container_name
       ]
     },
+    {
+      name              = "certbot"
+      image             = "certbot/certbot"
+      essential         = false
+      memoryReservation = 128
+      command = [
+        "certbot", "certonly", "--dns-route53", "--agree-tos", "--non-interactive", "--email", data.aws_ssm_parameter.lets_encrypt_email.value, "-d", "${local.domain_name}", "-d", "www.${local.domain_name}"
+      ]
+      dependsOn = [
+        {
+          containerName = var.proxy_container_name
+          condition     = "START"
+        }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          awslogs-group         = "ecs/certbot",
+          awslogs-region        = "us-east-1",
+          awslogs-stream-prefix = local.cluster_name
+          awslogs-create-group  = "true"
+        }
+      }
+      mountPoints = [
+        {
+          sourceVolume  = "ssl-certificates"
+          containerPath = "/etc/letsencrypt"
+        }
+      ]
+      volumes = [
+        {
+          name = "ssl-certificates"
+        }
+      ]
+    }
   ])
 }
 

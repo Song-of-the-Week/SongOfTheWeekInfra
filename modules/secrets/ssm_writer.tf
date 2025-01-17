@@ -26,3 +26,8 @@ resource "aws_ssm_parameter" "spotify_credentials" {
   type  = "String"
   value = aws_secretsmanager_secret.spotify_credentials.arn
 }
+
+resource "aws_ssm_parameter" "lets_encrypt_email" {
+  name = "/ecs/lets-encrypt-email"
+  type = "String"
+}

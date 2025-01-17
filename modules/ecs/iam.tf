@@ -121,3 +121,75 @@ resource "aws_iam_policy" "this" {
     ]
   })
 }
+
+resource "aws_iam_role" "autoscaling_notification_role" {
+  name = "AutoScalingNotificationRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect    = "Allow",
+        Principal = { Service = "autoscaling.amazonaws.com" },
+        Action    = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  inline_policy {
+    name = "SNSPublishPolicy"
+    policy = jsonencode({
+      Version = "2012-10-17",
+      Statement = [
+        {
+          Effect   = "Allow",
+          Action   = ["sns:Publish"],
+          Resource = aws_sns_topic.eip_assignment_topic.arn
+        }
+      ]
+    })
+  }
+}
+
+resource "aws_iam_role" "lambda_execution_role" {
+  name = "EIPAssignmentLambdaRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect    = "Allow",
+        Principal = { Service = "lambda.amazonaws.com" },
+        Action    = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  inline_policy {
+    name = "EIPAssignmentLambdaPolicy"
+    policy = jsonencode({
+      Version = "2012-10-17",
+      Statement = [
+        {
+          Effect = "Allow",
+          Action = [
+            "ec2:DescribeInstances",
+            "ec2:DescribeAddresses",
+            "ec2:AssociateAddress",
+            "autoscaling:CompleteLifecycleAction"
+          ],
+          Resource = "*"
+        },
+        {
+          Effect = "Allow",
+          Action = [
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
+          ],
+          Resource = "*"
+        }
+      ]
+    })
+  }
+}

@@ -86,3 +86,7 @@ We use SES for email verification.
 ## ECR Prerequisites
 
 Our current setup requires an intial set of images to exist in ECR at the specified repositores. Build the app for production from the application repo using `make ENV=prod docker-build` in that repository, then push the images to the respective repos. You will not have to do this once the application has been built initially. 
+
+## Let's Encrypt
+
+You need to add the email you want registered with your Let's Encrypt SSL certificate in Parameter Store at `/ecs/lets-encrypt-email`

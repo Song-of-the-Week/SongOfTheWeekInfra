@@ -28,6 +28,54 @@ resource "aws_ssm_parameter" "ecs_subnet_1b_arn" {
   value = aws_subnet.ecs_1b.arn
 }
 
+resource "aws_ssm_parameter" "ecs_subnet_1c_arn" {
+  name  = "/network/ecs-subnet-1c/arn"
+  type  = "String"
+  value = aws_subnet.ecs_1c.arn
+}
+
+resource "aws_ssm_parameter" "ecs_subnet_1d_arn" {
+  name  = "/network/ecs-subnet-1d/arn"
+  type  = "String"
+  value = aws_subnet.ecs_1d.arn
+}
+
+resource "aws_ssm_parameter" "ecs_subnet_1e_arn" {
+  name  = "/network/ecs-subnet-1e/arn"
+  type  = "String"
+  value = aws_subnet.ecs_1e.arn
+}
+
+resource "aws_ssm_parameter" "ecs_subnet_1f_arn" {
+  name  = "/network/ecs-subnet-1f/arn"
+  type  = "String"
+  value = aws_subnet.ecs_1f.arn
+}
+
+resource "aws_ssm_parameter" "ecs_subnet_1c_id" {
+  name  = "/network/ecs-subnet-1c/id"
+  type  = "String"
+  value = aws_subnet.ecs_1c.id
+}
+
+resource "aws_ssm_parameter" "ecs_subnet_1d_id" {
+  name  = "/network/ecs-subnet-1d/id"
+  type  = "String"
+  value = aws_subnet.ecs_1d.id
+}
+
+resource "aws_ssm_parameter" "ecs_subnet_1e_id" {
+  name  = "/network/ecs-subnet-1e/id"
+  type  = "String"
+  value = aws_subnet.ecs_1e.id
+}
+
+resource "aws_ssm_parameter" "ecs_subnet_1f_id" {
+  name  = "/network/ecs-subnet-1f/id"
+  type  = "String"
+  value = aws_subnet.ecs_1f.id
+}
+
 resource "aws_ssm_parameter" "ecs_tg_id" {
   name  = "/network/ecs-tg/id"
   type  = "String"

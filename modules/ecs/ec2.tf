@@ -67,39 +67,53 @@ data "aws_ami" "amazon_linux_2" {
 
 
 resource "aws_autoscaling_group" "ecs_asg" {
-  vpc_zone_identifier = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]
+  vpc_zone_identifier = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value, data.aws_ssm_parameter.subnet_1c_id.value, data.aws_ssm_parameter.subnet_1d_id.value, data.aws_ssm_parameter.subnet_1e_id.value, data.aws_ssm_parameter.subnet_1f_id.value]
   desired_capacity    = 1
   min_size            = var.minimum_ec2_instances
   max_size            = var.maximum_ec2_instances
+  mixed_instances_policy {
+    instances_distribution {
+      on_demand_base_capacity                  = 0
+      on_demand_percentage_above_base_capacity = 0
+      spot_allocation_strategy                 = "capacity-optimized"
+    }
 
-  launch_template {
-    id      = aws_launch_template.ecs_lt.id
-    version = "$Latest"
+    launch_template {
+      launch_template_specification {
+        launch_template_id = aws_launch_template.ecs_lt.id
+        version            = "$Latest"
+      }
+
+      override {
+        instance_type     = "t3.micro"
+        weighted_capacity = "1"
+      }
+    }
   }
-
   tag {
     key                 = "AmazonECSManaged"
     value               = true
     propagate_at_launch = true
   }
+
 }
 
-resource "aws_autoscaling_schedule" "on" {
-  scheduled_action_name  = "sotw-ecs-ec2-schedule-on-${var.env}"
-  min_size               = var.minimum_ec2_instances
-  max_size               = var.maximum_ec2_instances
-  desired_capacity       = 1
-  recurrence             = "${var.app_on_time} * * *"
-  autoscaling_group_name = aws_autoscaling_group.ecs_asg.name
-}
-resource "aws_autoscaling_schedule" "off" {
-  scheduled_action_name  = "sotw-ecs-ec2-schedule-off-${var.env}"
-  min_size               = 0
-  max_size               = 0
-  desired_capacity       = 0
-  recurrence             = "${var.app_off_time} * * *"
-  autoscaling_group_name = aws_autoscaling_group.ecs_asg.name
-}
+# resource "aws_autoscaling_schedule" "on" {
+#   scheduled_action_name  = "sotw-ecs-ec2-schedule-on-${var.env}"
+#   min_size               = var.minimum_ec2_instances
+#   max_size               = var.maximum_ec2_instances
+#   desired_capacity       = 1
+#   recurrence             = "${var.app_on_time} * * *"
+#   autoscaling_group_name = aws_autoscaling_group.ecs_asg.name
+# }
+# resource "aws_autoscaling_schedule" "off" {
+#   scheduled_action_name  = "sotw-ecs-ec2-schedule-off-${var.env}"
+#   min_size               = 0
+#   max_size               = 0
+#   desired_capacity       = 0
+#   recurrence             = "${var.app_off_time} * * *"
+#   autoscaling_group_name = aws_autoscaling_group.ecs_asg.name
+# }
 
 data "aws_secretsmanager_secret" "ec2_public_key" {
   arn = data.aws_ssm_parameter.ec2_pub_arn.value
@@ -112,4 +126,14 @@ data "aws_secretsmanager_secret_version" "current" {
 resource "aws_key_pair" "ec2_ecs_key" {
   key_name   = "sotw-ec2-ecs-key-${var.env}"
   public_key = data.aws_secretsmanager_secret_version.current.secret_string
+}
+
+resource "aws_autoscaling_lifecycle_hook" "eip_assignment_hook" {
+  name                    = "EIPAssignment-Hook"
+  autoscaling_group_name  = aws_autoscaling_group.ecs_asg.name
+  default_result          = "ABANDON"
+  heartbeat_timeout       = 180
+  lifecycle_transition    = "autoscaling:EC2_INSTANCE_LAUNCHING"
+  notification_target_arn = aws_sns_topic.eip_assignment_topic.arn
+  role_arn                = aws_iam_role.autoscaling_notification_role.arn
 }
