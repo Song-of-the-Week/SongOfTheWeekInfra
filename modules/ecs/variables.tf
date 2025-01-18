@@ -75,13 +75,19 @@ variable "app_on_time" {
 
 variable "minimum_ec2_instances" {
   type    = number
-  default = 1
+  default = 2
 }
 
 variable "maximum_ec2_instances" {
   type    = number
-  default = 3
+  default = 2
 }
+
+variable "desired_ec2_instances" {
+  type    = number
+  default = 2
+}
+
 
 variable "instance_type" {
   type    = string

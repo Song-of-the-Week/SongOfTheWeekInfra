@@ -50,6 +50,13 @@ resource "aws_ecs_task_definition" "this" {
     cpu_architecture        = "X86_64"
   }
 
+
+  volume {
+    name                = "ssl-certificates"
+    host_path           = "/etc/letsencrypt"
+    configure_at_launch = false
+  }
+
   container_definitions = jsonencode([
     {
       name = var.backend_container_name
@@ -161,10 +168,12 @@ resource "aws_ecs_task_definition" "this" {
       essential = true
       portMappings = [
         {
+          hostPort      = 80
           containerPort = 80
           protocol      = "tcp"
         },
         {
+          hostPort      = 443
           containerPort = 443
           protocol      = "tcp"
         },
@@ -191,14 +200,28 @@ resource "aws_ecs_task_definition" "this" {
       links = [
         var.frontend_container_name, var.backend_container_name
       ]
+      environment = [
+        { name = "DOMAIN_NAME", value = local.domain_name },
+      ]
+      mountPoints = [
+        {
+          sourceVolume  = "ssl-certificates"
+          containerPath = "/etc/letsencrypt"
+        }
+      ]
     },
     {
       name              = "certbot"
-      image             = "certbot/certbot"
+      image             = "certbot/dns-route53"
       essential         = false
       memoryReservation = 128
       command = [
-        "certbot", "certonly", "--dns-route53", "--agree-tos", "--non-interactive", "--email", data.aws_ssm_parameter.lets_encrypt_email.value, "-d", "${local.domain_name}", "-d", "www.${local.domain_name}"
+        "certonly",
+        "--dns-route53",
+        "--agree-tos",
+        "-n",
+        "-m ${data.aws_ssm_parameter.lets_encrypt_email.value}",
+        "-d ${local.domain_name},www.${local.domain_name}"
       ]
       dependsOn = [
         {
@@ -221,12 +244,8 @@ resource "aws_ecs_task_definition" "this" {
           containerPath = "/etc/letsencrypt"
         }
       ]
-      volumes = [
-        {
-          name = "ssl-certificates"
-        }
-      ]
-    }
+
+    },
   ])
 }
 
@@ -254,12 +273,6 @@ resource "aws_ecs_service" "this" {
   capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.this.name
     weight            = 100
-  }
-
-  load_balancer {
-    target_group_arn = data.aws_ssm_parameter.tg_id.value
-    container_name   = "nginx"
-    container_port   = 80
   }
 
   depends_on = [aws_autoscaling_group.ecs_asg]

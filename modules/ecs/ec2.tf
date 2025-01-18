@@ -1,3 +1,7 @@
+locals {
+  ecs_subnets = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value, data.aws_ssm_parameter.subnet_1c_id.value, data.aws_ssm_parameter.subnet_1d_id.value, data.aws_ssm_parameter.subnet_1e_id.value, data.aws_ssm_parameter.subnet_1f_id.value]
+}
+
 resource "aws_launch_template" "ecs_lt" {
   name_prefix   = "ecs-template"
   image_id      = data.aws_ami.amazon_linux_2.id
@@ -67,8 +71,8 @@ data "aws_ami" "amazon_linux_2" {
 
 
 resource "aws_autoscaling_group" "ecs_asg" {
-  vpc_zone_identifier = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value, data.aws_ssm_parameter.subnet_1c_id.value, data.aws_ssm_parameter.subnet_1d_id.value, data.aws_ssm_parameter.subnet_1e_id.value, data.aws_ssm_parameter.subnet_1f_id.value]
-  desired_capacity    = 1
+  vpc_zone_identifier = local.ecs_subnets
+  desired_capacity    = var.desired_ec2_instances
   min_size            = var.minimum_ec2_instances
   max_size            = var.maximum_ec2_instances
   mixed_instances_policy {
