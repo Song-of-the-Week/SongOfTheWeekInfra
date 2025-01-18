@@ -184,11 +184,6 @@ resource "aws_cloudwatch_event_target" "ecs_task_target" {
   ecs_target {
     task_definition_arn = aws_ecs_task_definition.certbot_task.arn
     task_count          = 1
-    launch_type         = "EC2"
-    network_configuration {
-      subnets         = local.ecs_subnets
-      security_groups = [data.aws_ssm_parameter.sg_id.value]
-    }
   }
 }
 
@@ -209,7 +204,34 @@ resource "aws_iam_role" "eventbridge_role" {
   })
 }
 
+data "aws_caller_identity" "current" {}
+
+resource "aws_iam_policy" "eventbridge_policy" {
+  name = "eventbridge-ecs-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = "ecs:RunTask",
+        Resource = "arn:aws:ecs:*:${data.aws_caller_identity.current.account_id}:*"
+      },
+      {
+        Effect   = "Allow",
+        Action   = "iam:PassRole",
+        Resource = aws_iam_role.certbot_ecs_task_execution_role.arn
+      },
+      {
+        Effect   = "Allow",
+        Action   = "iam:PassRole",
+        Resource = aws_iam_role.ecs_task_execution_role.arn
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role_policy_attachment" "eventbridge_policy_attachment" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  policy_arn = aws_iam_policy.eventbridge_policy.arn
   role       = aws_iam_role.eventbridge_role.name
 }
