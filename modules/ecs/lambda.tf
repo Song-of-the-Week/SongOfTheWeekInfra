@@ -23,10 +23,6 @@ resource "aws_lambda_permission" "sns_invoke_permission" {
   source_arn    = aws_sns_topic.eip_assignment_topic.arn
 }
 
-output "eip_assignment_lambda_function" {
-  value = aws_lambda_function.eip_assignment_function.id
-}
-
 resource "aws_sns_topic" "eip_assignment_topic" {
   name = "EIPAssignmentTopic"
 }

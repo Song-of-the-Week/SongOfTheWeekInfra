@@ -2,7 +2,6 @@ resource "aws_ecs_task_definition" "certbot_task" {
   family             = "certbot-renewal-task-${var.env}"
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
   network_mode       = "bridge"
-  cpu                = "64"
   memory             = "64"
 
   container_definitions = jsonencode([
@@ -18,6 +17,15 @@ resource "aws_ecs_task_definition" "certbot_task" {
           readOnly      = false
         }
       ]
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          awslogs-group         = "ecs/certbot-renewal-${var.env}",
+          awslogs-region        = "us-east-1",
+          awslogs-stream-prefix = local.cluster_name
+          awslogs-create-group  = "true"
+        }
+      },
     }
   ])
 
@@ -26,11 +34,77 @@ resource "aws_ecs_task_definition" "certbot_task" {
 
     efs_volume_configuration {
       file_system_id     = aws_efs_file_system.certbot_efs.id
-      root_directory     = "/certbot"
       transit_encryption = "ENABLED"
     }
   }
 }
+
+resource "aws_iam_role_policy_attachment" "certbot_renewal_logs_attachment" {
+  count = 1
+  role  = aws_iam_role.certbot_ecs_task_execution_role.name
+
+  policy_arn = aws_iam_policy.certbot_renewal_logs.arn
+}
+
+resource "aws_iam_policy" "certbot_renewal_logs" {
+  name = "certbot-renewal-ecs-policy-${var.env}"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams"
+        ]
+        Resource = [ # TODO: dynamic region
+          "arn:aws:logs:*:${var.account_id}:log-group:*"
+        ]
+        Effect = "Allow"
+      },
+      {
+        Action = [
+          "kms:Decrypt",
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = [
+          data.aws_ssm_parameter.database_credentials.value,
+          data.aws_ssm_parameter.spotify_credentials.value,
+          "arn:aws:kms:*:${var.env}:key/key_id"
+        ]
+        Effect = "Allow"
+      },
+    ]
+  })
+}
+
+
+resource "aws_iam_policy" "efs_access_policy" {
+  name        = "certbot-efs-access-policy-${var.env}"
+  description = "Policy for ECS task to access Amazon EFS"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "elasticfilesystem:DescribeFileSystems",
+          "elasticfilesystem:DescribeMountTargets",
+          "elasticfilesystem:DescribeAccessPoints",
+          "elasticfilesystem:CreateAccessPoint",
+          "elasticfilesystem:DescribeTags",
+          "elasticfilesystem:ClientWrite",
+          "elasticfilesystem:ClientRead"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach the policy to the IAM role
+
 
 resource "aws_iam_role" "certbot_ecs_task_execution_role" {
   name = "certbot-ecs-task-execution-role-${var.env}"
@@ -50,8 +124,12 @@ resource "aws_iam_role" "certbot_ecs_task_execution_role" {
 
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
-    "arn:aws:iam::aws:policy/AmazonEFSClientFullAccess"
   ]
+}
+
+resource "aws_iam_role_policy_attachment" "attach_efs_access_policy" {
+  policy_arn = aws_iam_policy.efs_access_policy.arn
+  role       = aws_iam_role.certbot_ecs_task_execution_role.name
 }
 
 resource "aws_iam_role" "certbot_ecs_task_role" {
@@ -80,24 +158,18 @@ resource "aws_ecs_service" "certbot_service" {
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.certbot_task.arn
   desired_count   = 1
-
-  network_configuration {
-    subnets          = local.ecs_subnets
-    security_groups  = [data.aws_ssm_parameter.sg_id.value]
-    assign_public_ip = false
-  }
 }
 
 resource "aws_cloudwatch_event_rule" "certbot_renewal_schedule" {
   name                = "certbot-renewal-rule-${var.env}"
   description         = "Trigger certbot renewal every 60 days"
-  schedule_expression = "cron(0 0 */60 * ? *)" # Every 60 days at midnight UTC
+  schedule_expression = "cron(0 0 ? * 2 *)"
 }
 
 resource "aws_cloudwatch_event_target" "ecs_task_target" {
-  rule = aws_cloudwatch_event_rule.certbot_renewal_schedule.name
-  arn  = aws_ecs_cluster.this.arn
-
+  rule     = aws_cloudwatch_event_rule.certbot_renewal_schedule.name
+  arn      = aws_ecs_cluster.this.arn
+  role_arn = aws_iam_role.eventbridge_role.arn
   ecs_target {
     task_definition_arn = aws_ecs_task_definition.certbot_task.arn
     task_count          = 1
@@ -110,7 +182,7 @@ resource "aws_cloudwatch_event_target" "ecs_task_target" {
 }
 
 resource "aws_iam_role" "eventbridge_role" {
-  name = "EventBridgeRole"
+  name = "certbot-eventbridge-role-${var.env}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

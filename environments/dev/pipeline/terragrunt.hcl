@@ -7,7 +7,7 @@ dependencies {
 }
 
 inputs = {
-  build_branhc
+  build_branch = "feat/no-alb-changes"
 }
 
 terraform {

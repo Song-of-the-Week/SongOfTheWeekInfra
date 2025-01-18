@@ -52,9 +52,12 @@ resource "aws_ecs_task_definition" "this" {
 
 
   volume {
-    name                = "ssl-certificates"
-    host_path           = "/etc/letsencrypt"
-    configure_at_launch = false
+    name = "certificate-volume"
+
+    efs_volume_configuration {
+      file_system_id     = aws_efs_file_system.certbot_efs.id
+      transit_encryption = "ENABLED"
+    }
   }
 
   container_definitions = jsonencode([
@@ -205,8 +208,9 @@ resource "aws_ecs_task_definition" "this" {
       ]
       mountPoints = [
         {
-          sourceVolume  = "ssl-certificates"
+          sourceVolume  = "certificate-volume"
           containerPath = "/etc/letsencrypt"
+          readOnly      = false
         }
       ]
     },
@@ -240,8 +244,9 @@ resource "aws_ecs_task_definition" "this" {
       }
       mountPoints = [
         {
-          sourceVolume  = "ssl-certificates"
+          sourceVolume  = "certificate-volume"
           containerPath = "/etc/letsencrypt"
+          readOnly      = false
         }
       ]
 
@@ -253,7 +258,7 @@ resource "aws_ecs_service" "this" {
   name            = "sotw-ecs-service-${var.env}"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.this.arn
-  desired_count   = 1 // TODO: REVISIT THIS BEFORE DEPLOYING FOR REAL
+  desired_count   = 2 // TODO: REVISIT THIS BEFORE DEPLOYING FOR REAL
 
   # network_configuration {
   #   subnets         = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]

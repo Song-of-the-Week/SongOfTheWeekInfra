@@ -16,7 +16,7 @@ resource "aws_security_group" "ecs" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
+  egress {
     from_port   = 2049
     to_port     = 2049
     protocol    = "tcp"
@@ -26,6 +26,7 @@ resource "aws_security_group" "ecs" {
 
 resource "aws_security_group" "efs" {
   name_prefix = "efs-sg-${var.env}"
+  vpc_id      = aws_vpc.main.id
 
   ingress {
     from_port   = 2049
