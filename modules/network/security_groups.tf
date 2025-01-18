@@ -3,46 +3,41 @@ resource "aws_security_group" "ecs" {
   vpc_id = aws_vpc.main.id
 
   ingress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = -1
-    security_groups = [aws_security_group.alb.id]
-    description     = "traffic from ALB"
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "ALL TRAFFIC REMOVE BEFORE DEPLOYING TO PROD"
   }
-
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = -1
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"] # Replace with your VPC CIDR block
   }
 }
 
-resource "aws_security_group" "alb" {
-  name   = "alb-sg-${var.env}"
-  vpc_id = aws_vpc.main.id
+resource "aws_security_group" "efs" {
+  name_prefix = "efs-sg-${var.env}"
 
   ingress {
-    from_port   = 443
-    to_port     = 443
+    from_port   = 2049
+    to_port     = 2049
     protocol    = "tcp"
-    self        = "false"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTPS Traffic"
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTP Traffic (For Redirect)"
+    cidr_blocks = ["10.0.0.0/16"] # Allow inbound traffic from VPC (or specify ECS EC2 SG)
   }
 
   egress {
     from_port   = 0
     to_port     = 0
-    protocol    = -1
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }

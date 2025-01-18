@@ -11,6 +11,13 @@ resource "aws_ssm_parameter" "ecs_security_group_id" {
   value = aws_security_group.ecs.id
 }
 
+
+resource "aws_ssm_parameter" "efs_security_group_id" {
+  name  = "/network/efs-sg/id"
+  type  = "String"
+  value = aws_security_group.efs.id
+}
+
 resource "aws_ssm_parameter" "ecs_subnet_1a_id" {
   name  = "/network/ecs-subnet-1a/id"
   type  = "String"
@@ -74,12 +81,6 @@ resource "aws_ssm_parameter" "ecs_subnet_1f_id" {
   name  = "/network/ecs-subnet-1f/id"
   type  = "String"
   value = aws_subnet.ecs_1f.id
-}
-
-resource "aws_ssm_parameter" "ecs_tg_id" {
-  name  = "/network/ecs-tg/id"
-  type  = "String"
-  value = aws_lb_target_group.ecs_tg.id
 }
 
 resource "aws_ssm_parameter" "domain" {
