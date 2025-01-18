@@ -2,14 +2,14 @@ resource "aws_ecs_task_definition" "certbot_task" {
   family             = "certbot-renewal-task-${var.env}"
   execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
   network_mode       = "bridge"
-  memory             = "64"
 
   container_definitions = jsonencode([
     {
-      name      = "certbot"
-      image     = "certbot/dns-route53"
-      command   = ["renew", "--dns-route53", "--non-interactive", "--agree-tos"]
-      essential = true
+      name              = "certbot"
+      image             = "certbot/dns-route53"
+      command           = ["renew", "--dns-route53", "--non-interactive", "--agree-tos"]
+      essential         = true
+      memoryReservation = 32
       mountPoints = [
         {
           sourceVolume  = "certificate-volume"
@@ -157,7 +157,18 @@ resource "aws_ecs_service" "certbot_service" {
   name            = "certbot-renewal-service-${var.env}"
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.certbot_task.arn
-  desired_count   = 1
+  desired_count   = 0
+
+  triggers = {
+    redeployment = plantimestamp()
+  }
+
+  capacity_provider_strategy {
+    capacity_provider = aws_ecs_capacity_provider.this.name
+    weight            = 100
+  }
+  depends_on = [aws_autoscaling_group.ecs_asg]
+
 }
 
 resource "aws_cloudwatch_event_rule" "certbot_renewal_schedule" {

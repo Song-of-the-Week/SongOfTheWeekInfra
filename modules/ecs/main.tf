@@ -218,7 +218,7 @@ resource "aws_ecs_task_definition" "this" {
       name              = "certbot"
       image             = "certbot/dns-route53"
       essential         = false
-      memoryReservation = 128
+      memoryReservation = 32
       command = [
         "certonly",
         "--dns-route53",
@@ -279,6 +279,8 @@ resource "aws_ecs_service" "this" {
     capacity_provider = aws_ecs_capacity_provider.this.name
     weight            = 100
   }
+  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 100
 
   depends_on = [aws_autoscaling_group.ecs_asg]
 }
