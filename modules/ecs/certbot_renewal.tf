@@ -40,8 +40,7 @@ resource "aws_ecs_task_definition" "certbot_task" {
 }
 
 resource "aws_iam_role_policy_attachment" "certbot_renewal_logs_attachment" {
-  count = 1
-  role  = aws_iam_role.certbot_ecs_task_execution_role.name
+  role = aws_iam_role.certbot_ecs_task_execution_role.name
 
   policy_arn = aws_iam_policy.certbot_renewal_logs.arn
 }
@@ -121,14 +120,15 @@ resource "aws_iam_role" "certbot_ecs_task_execution_role" {
       }
     ]
   })
-
-  managed_policy_arns = [
-    "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
-  ]
 }
 
 resource "aws_iam_role_policy_attachment" "attach_efs_access_policy" {
   policy_arn = aws_iam_policy.efs_access_policy.arn
+  role       = aws_iam_role.certbot_ecs_task_execution_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "certbot_ecs_execution_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
   role       = aws_iam_role.certbot_ecs_task_execution_role.name
 }
 
@@ -147,11 +147,13 @@ resource "aws_iam_role" "certbot_ecs_task_role" {
       }
     ]
   })
-
-  managed_policy_arns = [
-    "arn:aws:iam::aws:policy/AmazonRoute53FullAccess"
-  ]
 }
+
+resource "aws_iam_role_policy_attachment" "certbot_route53_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonRoute53FullAccess"
+  role       = aws_iam_role.certbot_ecs_task_role.name
+}
+
 
 resource "aws_ecs_service" "certbot_service" {
   name            = "certbot-renewal-service-${var.env}"

@@ -77,7 +77,7 @@ resource "aws_autoscaling_group" "ecs_asg" {
   max_size            = var.maximum_ec2_instances
   mixed_instances_policy {
     instances_distribution {
-      on_demand_base_capacity                  = 0
+      on_demand_base_capacity                  = var.min_on_demand_ec2_instances
       on_demand_percentage_above_base_capacity = 0
       spot_allocation_strategy                 = "capacity-optimized"
     }

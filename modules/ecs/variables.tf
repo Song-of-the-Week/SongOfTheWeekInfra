@@ -93,3 +93,8 @@ variable "instance_type" {
   type    = string
   default = "t3.micro"
 }
+
+variable "min_on_demand_ec2_instances" {
+  type    = string
+  default = 0
+}
