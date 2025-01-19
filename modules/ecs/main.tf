@@ -302,7 +302,7 @@ resource "aws_ecs_service" "this" {
     capacity_provider = aws_ecs_capacity_provider.this.name
     weight            = 100
   }
-  deployment_minimum_healthy_percent = 0
+  deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 100
 
   depends_on = [aws_autoscaling_group.ecs_asg]
