@@ -1,3 +1,8 @@
+locals {
+  website_endpoint = data.aws_ssm_parameter.website_endpoint.value
+  website_hosted_zone_id = data.aws_ssm_parameter.website_hosted_zone_id
+}
+
 data "aws_route53_zone" "this" {
   name         = var.domain_name
   private_zone = false
@@ -24,13 +29,51 @@ resource "aws_route53_record" "eip_records_www" {
   name           = "www.${var.domain_name}"           # Replace with your domain or subdomain
   type           = "A"                                # For IPv4 address
   ttl            = 60
-  set_identifier = "Primary"
+  set_identifier = "PrimaryWWW"
   failover_routing_policy {
     type = "PRIMARY"
   }
   # Combine all Elastic IPs into a single list of records
   records         = [for eip in aws_eip.this : eip.public_ip]
   health_check_id = aws_route53_health_check.this.id # Attach the health check to the DNS record
+}
+
+resource "aws_route53_record" "secondary" {
+  zone_id        = data.aws_route53_zone.this.zone_id # Replace with your Route 53 hosted zone ID
+  name           = "${var.domain_name}"  
+  type    = "A"
+  ttl = 60
+  set_identifier = "Secondary"
+
+  # S3 Website Endpoint
+  alias {
+    name                   = local.website_endpoint
+    zone_id                = local.website_hosted_zone_id
+    evaluate_target_health = false
+  }
+
+  failover_routing_policy {
+    type = "SECONDARY"
+  }
+}
+
+resource "aws_route53_record" "secondary" {
+  zone_id        = data.aws_route53_zone.this.zone_id # Replace with your Route 53 hosted zone ID
+  name           = "www.${var.domain_name}"  
+  type    = "A"
+  ttl = 60
+  set_identifier = "SecondaryWWW"
+
+  # S3 Website Endpoint
+  alias {
+    name                   = local.website_endpoint
+    zone_id                = local.website_hosted_zone_id
+    evaluate_target_health = false
+  }
+
+  failover_routing_policy {
+    type = "SECONDARY"
+  }
 }
 
 resource "aws_route53_health_check" "this" {
