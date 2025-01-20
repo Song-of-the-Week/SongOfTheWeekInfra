@@ -1,0 +1,21 @@
+/* Reset default margin and padding */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Container for the image grid */
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+/* Styling for images */
+.image-grid img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}

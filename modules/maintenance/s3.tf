@@ -4,9 +4,13 @@ resource "aws_s3_bucket" "static_website" {
   bucket = "sotw-app-maintenance-page-${var.env}" # Replace with your unique bucket name
 }
 
-resource "aws_s3_bucket_acl" "public_read_acl" {
+resource "aws_s3_bucket_public_access_block" "public_access" {
   bucket = aws_s3_bucket.static_website.id
-  acl    = "public-read"
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
 }
 
 # S3 Bucket Website Configuration
@@ -44,13 +48,16 @@ resource "aws_s3_object" "files" {
   bucket       = aws_s3_bucket.static_website.id
   key          = each.value
   source       = "${path.module}/files/${each.value}"
+
   content_type = lookup(
     {
       "html" = "text/html"
       "css"  = "text/css"
       "js"   = "application/javascript"
+      "jpeg" = "image/jpeg"
+      "png"  = "image/png"
     },
-    split(".", each.value)[-1],
+    split(".", each.value)[length(split(".", each.value)) - 1],
     "application/octet-stream" # Default MIME type
   )
 }
