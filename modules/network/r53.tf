@@ -1,6 +1,6 @@
 locals {
-  website_endpoint = data.aws_ssm_parameter.website_endpoint.value
-  website_hosted_zone_id = data.aws_ssm_parameter.website_hosted_zone_id
+  cloudfront_domain_name    = data.aws_ssm_parameter.cloudfront_domain_name.value
+  cloudfront_hosted_zone_id = data.aws_ssm_parameter.cloudfront_hosted_zone_id.value
 }
 
 data "aws_route53_zone" "this" {
@@ -39,16 +39,16 @@ resource "aws_route53_record" "eip_records_www" {
 }
 
 resource "aws_route53_record" "secondary" {
-  zone_id        = data.aws_route53_zone.this.zone_id # Replace with your Route 53 hosted zone ID
-  name           = "${var.domain_name}"  
+  zone_id = data.aws_route53_zone.this.zone_id # Replace with your Route 53 hosted zone ID
+  name    = var.domain_name
   type    = "A"
-  ttl = 60
+  # ttl            = 60
   set_identifier = "Secondary"
 
   # S3 Website Endpoint
   alias {
-    name                   = local.website_endpoint
-    zone_id                = local.website_hosted_zone_id
+    name                   = local.cloudfront_domain_name
+    zone_id                = local.cloudfront_hosted_zone_id
     evaluate_target_health = false
   }
 
@@ -57,17 +57,17 @@ resource "aws_route53_record" "secondary" {
   }
 }
 
-resource "aws_route53_record" "secondary" {
-  zone_id        = data.aws_route53_zone.this.zone_id # Replace with your Route 53 hosted zone ID
-  name           = "www.${var.domain_name}"  
+resource "aws_route53_record" "secondary_www" {
+  zone_id = data.aws_route53_zone.this.zone_id # Replace with your Route 53 hosted zone ID
+  name    = "www.${var.domain_name}"
   type    = "A"
-  ttl = 60
+  # ttl            = 60
   set_identifier = "SecondaryWWW"
 
   # S3 Website Endpoint
   alias {
-    name                   = local.website_endpoint
-    zone_id                = local.website_hosted_zone_id
+    name                   = local.cloudfront_domain_name
+    zone_id                = local.cloudfront_hosted_zone_id
     evaluate_target_health = false
   }
 
@@ -84,4 +84,5 @@ resource "aws_route53_health_check" "this" {
   failure_threshold = 3               # Number of consecutive failures before marking the endpoint as unhealthy
   request_interval  = 30              # Interval between health checks (seconds)
   measure_latency   = true            # Optional: Measure the latency of the check
+  regions           = ["us-east-1", "us-west-1", "us-west-2", "ap-northeast-1", "ap-southeast-1", "ap-southeast-2", "eu-west-1", "sa-east-1"]
 }

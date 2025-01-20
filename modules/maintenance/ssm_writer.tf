@@ -1,11 +1,11 @@
-resource "aws_ssm_parameter" "website_endpoint" {
-  name  = "/maintenance/bucket/website-endpoint"
+resource "aws_ssm_parameter" "cloudfront_domain_name" {
+  name  = "/maintenance/cloudfront/domain-name"
   type  = "String"
-  value = aws_s3_bucket_website_configuration.website.website_endpoint
+  value = aws_cloudfront_distribution.this.domain_name
 }
 
-resource "aws_ssm_parameter" "website_hosted_zone_id" {
-  name  = "/maintenance/bucket/website-hosted-zone-id"
+resource "aws_ssm_parameter" "hosted_zone_id" {
+  name  = "/maintenance/cloudfront/hosted-zone-id"
   type  = "String"
-  value = aws_s3_bucket.static_website.hosted_zone_id
+  value = aws_cloudfront_distribution.this.hosted_zone_id
 }

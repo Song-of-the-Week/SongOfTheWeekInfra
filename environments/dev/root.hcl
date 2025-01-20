@@ -2,6 +2,7 @@ inputs = {
     env = "dev"
     account_id = "418272759779"
     assume_role_name = "terraform"
+    domain_name = "sotw-app-dev.com"
 }
 
 remote_state {

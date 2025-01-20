@@ -1,7 +1,7 @@
-data "aws_ssm_parameter" "website_endpoint" {
-  name = "/maintenance/bucket/website-endpoint"
+data "aws_ssm_parameter" "cloudfront_domain_name" {
+  name = "/maintenance/cloudfront/domain-name"
 }
 
-data "aws_ssm_parameter" "website_hosted_zone_id" {
-  name = "/maintenance/bucket/website-hosted-zone-id"
+data "aws_ssm_parameter" "cloudfront_hosted_zone_id" {
+  name = "/maintenance/cloudfront/hosted-zone-id"
 }
