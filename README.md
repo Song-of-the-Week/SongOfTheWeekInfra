@@ -89,4 +89,4 @@ Our current setup requires an intial set of images to exist in ECR at the specif
 
 ## Let's Encrypt
 
-You need to add the email you want registered with your Let's Encrypt SSL certificate in Parameter Store at `/ecs/lets-encrypt-email`
+You need to add the email you want registered with your Let's Encrypt SSL certificate in Parameter Store at `/secrets/lets-encrypt-email`

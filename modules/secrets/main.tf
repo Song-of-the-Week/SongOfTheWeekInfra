@@ -1,39 +1,96 @@
-resource "aws_secretsmanager_secret" "ec2_pub" {
-  name = "/ecs/key-pair/public"
+resource "aws_ssm_parameter" "ecs_pub" {
+  name  = "/secrets/ecs/key-pair/public"
+  type  = "SecureString"
+  value = "EC2 PUBLIC KEY"
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+resource "aws_ssm_parameter" "ecs_priv" {
+  name  = "/secrets/ecs/key-pair/private"
+  type  = "SecureString"
+  value = "EC2 PRIVATE KEY"
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 
-resource "aws_secretsmanager_secret" "ec2_priv" {
-  name = "/ecs/key-pair/private"
+resource "aws_ssm_parameter" "db_credentials_username" {
+  name  = "/secrets/database/credentials/username"
+  type  = "SecureString"
+  value = "USERNAME"
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+resource "aws_ssm_parameter" "db_credentials_password" {
+  name  = "/secrets/database/credentials/password"
+  type  = "SecureString"
+  value = "PASSWORD"
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 
-resource "random_password" "db_password" {
-  length           = 32
-  special          = true
-  override_special = "_%@"
+resource "aws_ssm_parameter" "db_credentials_host" {
+  name  = "/secrets/database/credentials/host"
+  type  = "SecureString"
+  value = "HOST"
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 
-# Creating a AWS secret for database master account (Masteraccoundb)
-
-resource "aws_secretsmanager_secret" "db_credentials" {
-  name = "/database/credentials"
+resource "aws_ssm_parameter" "db_credentials_port" {
+  name  = "/secrets/database/credentials/port"
+  type  = "SecureString"
+  value = "PORT"
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 
-# Creating a AWS secret versions for database master account (Masteraccoundb)
-
-resource "aws_secretsmanager_secret_version" "sversion" {
-  secret_id     = aws_secretsmanager_secret.db_credentials.id
-  secret_string = <<EOF
-   {
-    "username": "${var.db_username}",
-    "password": "${random_password.db_password.result}"
-   }
-EOF
+resource "aws_ssm_parameter" "db_credentials_db" {
+  name  = "/secrets/database/credentials/db"
+  type  = "SecureString"
+  value = "DB"
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 
-resource "aws_secretsmanager_secret" "spotify_credentials" {
-  name = "/spotify/credentials"
+resource "aws_ssm_parameter" "github_token_secret" {
+  name  = "/secrets/github/token"
+  type  = "SecureString"
+  value = "GITHUB TOKEN HERE"
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 
-resource "aws_secretsmanager_secret" "github_token" {
-  name = "/secrets/github/token"
+resource "aws_ssm_parameter" "spotify_credentials_client_id" {
+  name  = "/secrets/spotify/credentials/client-id"
+  type  = "SecureString"
+  value = "SPOTIFY CLIENT ID HERE"
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+resource "aws_ssm_parameter" "spotify_credentials_client_secret" {
+  name  = "/secrets/spotify/credentials/client-secret"
+  type  = "SecureString"
+  value = "SPOTIFY CLIENT SECRET HERE"
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+resource "aws_ssm_parameter" "lets_encrypt_email" {
+  name  = "/secrets/lets-encrypt-email"
+  type  = "String"
+  value = "LET'S ENCRYPT EMAIL HERE"
+  lifecycle {
+    ignore_changes = [value]
+  }
 }

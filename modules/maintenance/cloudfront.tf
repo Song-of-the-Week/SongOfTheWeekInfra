@@ -28,6 +28,13 @@ resource "aws_cloudfront_distribution" "this" {
     min_ttl     = 0
   }
 
+  custom_error_response {
+    error_code            = 403
+    response_code         = 200
+    response_page_path    = "/"
+    error_caching_min_ttl = 0
+  }
+
   default_root_object = "index.html"
 
   viewer_certificate {

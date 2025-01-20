@@ -62,7 +62,7 @@ variable "send_registration_emails" {
 }
 
 variable "invite_token_expire_minutes" {
-  type = string
+  type    = string
   default = "10080"
 }
 
@@ -119,4 +119,14 @@ variable "on_demand_percentage_above_base_capacity" {
   type        = string
   default     = 50
   description = "The percentage of instances for the SOTW app that should be on-demand. Only applies when using use_spot_instances is true."
+}
+
+variable "deployment_minimum_healthy_percent" {
+  type    = number
+  default = 50
+}
+
+variable "deployment_maximum_percent" {
+  type    = number
+  default = 100
 }
