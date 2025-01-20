@@ -91,10 +91,17 @@ resource "aws_autoscaling_group" "ecs_asg" {
         }
 
         override {
-          instance_type     = "t3.micro"
+          instance_type     = var.instance_type
           weighted_capacity = "1"
         }
       }
+    }
+  }
+  dynamic "launch_template" {
+    for_each = var.use_spot_instances == false ? ["must specify launch template for on-demand instances"] : []
+    content {
+      id      = aws_launch_template.ecs_lt.id
+      version = "$Latest"
     }
   }
   tag {
