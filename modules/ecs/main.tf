@@ -122,6 +122,7 @@ resource "aws_ecs_task_definition" "this" {
         { name = "PASSWORD_RESET_VERIFICATION_URL", value = "https://${local.domain_name}/${var.password_reset_verification_endpoint}" },
         { name = "SPOTIFY_CALLBACK_URI", value = "https://${local.domain_name}/" },
         { name = "SEND_REGISTRATION_EMAILS", value = var.send_registration_emails },
+        { name = "SHARE_TOKEN_EXPIRE_MINUTES", value = var.invite_token_expire_minutes },
       ],
       healthCheck = {
         command     = ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
