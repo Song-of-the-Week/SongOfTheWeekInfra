@@ -3,11 +3,18 @@ resource "aws_security_group" "ecs" {
   vpc_id = aws_vpc.main.id
 
   ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = -1
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "ALL TRAFFIC REMOVE BEFORE DEPLOYING TO PROD"
+    description = "HTTPS"
+  }
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTP"
   }
   egress {
     from_port   = 0
@@ -21,6 +28,7 @@ resource "aws_security_group" "ecs" {
     to_port     = 2049
     protocol    = "tcp"
     cidr_blocks = ["10.0.0.0/16"] # Replace with your VPC CIDR block
+    description = "EFS Volume Access for storing certbot Lets Encrypt SSL Certs."
   }
 }
 
