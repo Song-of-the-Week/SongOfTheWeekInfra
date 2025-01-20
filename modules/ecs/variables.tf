@@ -80,7 +80,7 @@ variable "minimum_ec2_instances" {
 
 variable "maximum_ec2_instances" {
   type    = number
-  default = 2
+  default = 3
 }
 
 variable "desired_ec2_instances" {
@@ -97,4 +97,21 @@ variable "instance_type" {
 variable "min_on_demand_ec2_instances" {
   type    = string
   default = 0
+}
+
+variable "desired_count_sotw_ecs_tasks" {
+  type    = string
+  default = 2
+}
+
+variable "use_spot_instances" {
+  type        = bool
+  default     = false
+  description = "Turn off when account is in the first 12 months, otherwise turn on."
+}
+
+variable "on_demand_percentage_above_base_capacity" {
+  type        = string
+  default     = 50
+  description = "The percentage of instances for the SOTW app that should be on-demand. Only applies when using use_spot_instances is true."
 }

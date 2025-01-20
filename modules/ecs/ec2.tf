@@ -75,22 +75,25 @@ resource "aws_autoscaling_group" "ecs_asg" {
   desired_capacity    = var.desired_ec2_instances
   min_size            = var.minimum_ec2_instances
   max_size            = var.maximum_ec2_instances
-  mixed_instances_policy {
-    instances_distribution {
-      on_demand_base_capacity                  = var.min_on_demand_ec2_instances
-      on_demand_percentage_above_base_capacity = 0
-      spot_allocation_strategy                 = "capacity-optimized"
-    }
-
-    launch_template {
-      launch_template_specification {
-        launch_template_id = aws_launch_template.ecs_lt.id
-        version            = "$Latest"
+  dynamic "mixed_instances_policy" {
+    for_each = var.use_spot_instances == true ? ["use spot instances"] : []
+    content {
+      instances_distribution {
+        on_demand_base_capacity                  = var.min_on_demand_ec2_instances
+        on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
+        spot_allocation_strategy                 = "capacity-optimized"
       }
 
-      override {
-        instance_type     = "t3.micro"
-        weighted_capacity = "1"
+      launch_template {
+        launch_template_specification {
+          launch_template_id = aws_launch_template.ecs_lt.id
+          version            = "$Latest"
+        }
+
+        override {
+          instance_type     = "t3.micro"
+          weighted_capacity = "1"
+        }
       }
     }
   }
