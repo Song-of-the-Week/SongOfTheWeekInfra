@@ -49,7 +49,7 @@ In the future these might be CloudFormation templates!
 * Manually generate key pair for ECS EC2:
     * `ssh-keygen`, call it whatever you want, no password
     * Ensure you `terragrunt apply` on `deployments/<env>/secrets
-    * Manually upload the secrets to the public and private secrets
+    * Manually upload the secrets to the `/secrets/ecs/key-pair/public` and `/secrets/ecs/key-pair/public` in Parameter Store.
 
 ## Register Domains and Certificates
 * Manually register domain in Route53. You will need to access that in the `network/r53.tf` file
@@ -66,7 +66,7 @@ Then, add to the terragrunt.hcl in your network directory under the proper envir
     }
  ```
 ## Set Up A Database
-We use (cockroachlabs)[cockroachlabs.cloud]. Configure a database there, and save the password to `/database/credentials` under password in Secrets Manager.
+We use (cockroachlabs)[cockroachlabs.cloud]. Once configured, make sure to fill out all of the parameters under `/secrets/database/credentials/` in Parameter Store (there are 5 of them).
 
 ## Configure Simple Email Service
 We use SES for email verification.
@@ -80,7 +80,7 @@ We use SES for email verification.
 
 
 ## Spotify Connection
-* You must manually add your Spotify Client ID and Secret to `spotify/credentials` by filling out `clientId` and `clientSecret` in a JSON format.
+* You must manually add your Spotify Client ID to `/secrets/spotify/credentials/client-id` and Client Secret to `/secrets/spotify/credentials/client-secret` in Parameter Store.
 
 
 ## ECR Prerequisites
@@ -89,4 +89,4 @@ Our current setup requires an intial set of images to exist in ECR at the specif
 
 ## Let's Encrypt
 
-You need to add the email you want registered with your Let's Encrypt SSL certificate in Parameter Store at `/secrets/lets-encrypt-email`
+You need to add the email you want registered with your Let's Encrypt SSL certificate in Parameter Store at `/secrets/lets-encrypt-email` in Parameter Store.
