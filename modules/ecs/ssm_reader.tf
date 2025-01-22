@@ -24,9 +24,6 @@ data "aws_ssm_parameter" "subnet_1e_id" {
 data "aws_ssm_parameter" "subnet_1f_id" {
   name = "/network/ecs-subnet-1f/id"
 }
-data "aws_ssm_parameter" "ec2_pub_arn" {
-  name = "/secrets/ecs/key-pair/public/arn"
-}
 
 data "aws_ssm_parameter" "database_credentials_username" {
   name = "/secrets/database/credentials/username"

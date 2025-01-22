@@ -7,7 +7,7 @@ dependencies {
 }
 
 inputs = {
-  build_branch = "feat/no-alb-changes"
+  build_branch = "main" // change this for testing stuff
 }
 
 terraform {

@@ -57,8 +57,8 @@ resource "aws_ecs_task_definition" "this" {
 
 
   volume {
-    name                = "certificate-volume"
-    configure_at_launch = false
+    name = "certificate-volume"
+    # configure_at_launch = false
 
 
     efs_volume_configuration {
@@ -309,7 +309,7 @@ resource "aws_ecs_service" "this" {
     weight            = 100
   }
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
-  deployment_maximum_percent         = 100
+  deployment_maximum_percent         = var.deployment_maximum_percent
 
   depends_on = [aws_autoscaling_group.ecs_asg]
 }

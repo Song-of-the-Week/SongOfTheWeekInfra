@@ -43,6 +43,15 @@ resource "aws_iam_policy" "ecs_instance" {
         Effect = "Allow"
       },
       {
+        Action = [
+          "ses:UseConfigurationSet",
+        ]
+        Resource = [
+          "arn:aws:ses:*:${var.account_id}:configuration-set/*"
+        ]
+        Effect = "Allow"
+      },
+      {
         Effect = "Allow",
         Action = [
           "route53:ListHostedZones",
@@ -131,16 +140,6 @@ resource "aws_iam_policy" "this" {
         ]
         Resource = [ # TODO: dynamic region
           "arn:aws:logs:*:${var.account_id}:log-group:*"
-        ]
-        Effect = "Allow"
-      },
-      {
-        Action = [
-          "kms:Decrypt",
-          "secretsmanager:GetSecretValue"
-        ]
-        Resource = [
-          "arn:aws:kms:*:${var.env}:key/key_id"
         ]
         Effect = "Allow"
       },

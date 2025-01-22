@@ -129,17 +129,13 @@ resource "aws_autoscaling_group" "ecs_asg" {
 #   autoscaling_group_name = aws_autoscaling_group.ecs_asg.name
 # }
 
-data "aws_secretsmanager_secret" "ec2_public_key" {
-  arn = data.aws_ssm_parameter.ec2_pub_arn.value
-}
-
-data "aws_secretsmanager_secret_version" "current" {
-  secret_id = data.aws_secretsmanager_secret.ec2_public_key.id
+data "aws_ssm_parameter" "ec2_public_key" {
+  name = "/secrets/ecs/key-pair/public"
 }
 
 resource "aws_key_pair" "ec2_ecs_key" {
   key_name   = "sotw-ec2-ecs-key-${var.env}"
-  public_key = data.aws_secretsmanager_secret_version.current.secret_string
+  public_key = data.aws_ssm_parameter.ec2_public_key.value
 }
 
 resource "aws_autoscaling_lifecycle_hook" "eip_assignment_hook" {
