@@ -21,6 +21,30 @@ resource "aws_route_table_association" "subnet_1a_route" {
   route_table_id = aws_route_table.route_table.id
 }
 
+resource "aws_route_table_association" "subnet_1c_route" {
+  subnet_id      = aws_subnet.ecs_1c.id
+  route_table_id = aws_route_table.route_table.id
+}
+
+
+resource "aws_route_table_association" "subnet_1d_route" {
+  subnet_id      = aws_subnet.ecs_1d.id
+  route_table_id = aws_route_table.route_table.id
+}
+
+
+resource "aws_route_table_association" "subnet_1e_route" {
+  subnet_id      = aws_subnet.ecs_1e.id
+  route_table_id = aws_route_table.route_table.id
+}
+
+
+resource "aws_route_table_association" "subnet_1f_route" {
+  subnet_id      = aws_subnet.ecs_1f.id
+  route_table_id = aws_route_table.route_table.id
+}
+
+
 resource "aws_route_table" "route_table_private" {
   vpc_id = aws_vpc.main.id
   tags = {

@@ -22,6 +22,11 @@ resource "aws_iam_role" "ecs_instance_role" {
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
+data "aws_route53_zone" "this" {
+  name         = local.domain_name
+  private_zone = false
+}
+
 resource "aws_iam_policy" "ecs_instance" {
   name = "sotw-ecs-instance-policy-${var.env}"
   policy = jsonencode({
@@ -36,7 +41,39 @@ resource "aws_iam_policy" "ecs_instance" {
           "arn:aws:ses:*:${var.account_id}:identity/${local.domain_name}"
         ]
         Effect = "Allow"
-      }
+      },
+      {
+        Action = [
+          "ses:UseConfigurationSet",
+        ]
+        Resource = [
+          "arn:aws:ses:*:${var.account_id}:configuration-set/*"
+        ]
+        Effect = "Allow"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "route53:ListHostedZones",
+          "route53:GetChange"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "route53:ChangeResourceRecordSets"
+        ],
+        Resource = data.aws_route53_zone.this.arn
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "elasticfilesystem:ClientMount",
+          "elasticfilesystem:ClientWrite"
+        ],
+        Resource = aws_efs_file_system.certbot_efs.arn
+      },
     ]
   })
 }
@@ -69,7 +106,7 @@ resource "aws_iam_role" "ecs_task_execution_role" {
           "Service" : "ecs-tasks.amazonaws.com"
         },
         "Action" : "sts:AssumeRole"
-      }
+      },
     ]
   })
 
@@ -109,15 +146,96 @@ resource "aws_iam_policy" "this" {
       {
         Action = [
           "kms:Decrypt",
-          "secretsmanager:GetSecretValue"
+          "ssm:GetParameters"
         ]
         Resource = [
-          data.aws_ssm_parameter.database_credentials.value,
-          data.aws_ssm_parameter.spotify_credentials.value,
-          "arn:aws:kms:*:${var.env}:key/key_id"
+          "arn:aws:ssm:*:${var.account_id}:parameter/secrets/database/credentials/*",
+          "arn:aws:ssm:*:${var.account_id}:parameter/secrets/spotify/credentials/*",
         ]
         Effect = "Allow"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role" "autoscaling_notification_role" {
+  name = "AutoScalingNotificationRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect    = "Allow",
+        Principal = { Service = "autoscaling.amazonaws.com" },
+        Action    = "sts:AssumeRole"
       }
     ]
   })
+}
+
+resource "aws_iam_policy" "sns_publish_policy" {
+  name = "SNSPublishPolicy"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = ["sns:Publish"],
+        Resource = aws_sns_topic.eip_assignment_topic.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "autoscaling_notification_role_attachment" {
+  role       = aws_iam_role.autoscaling_notification_role.name
+  policy_arn = aws_iam_policy.sns_publish_policy.arn
+}
+
+resource "aws_iam_role" "lambda_execution_role" {
+  name = "EIPAssignmentLambdaRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect    = "Allow",
+        Principal = { Service = "lambda.amazonaws.com" },
+        Action    = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "eip_assignment_lambda_policy" {
+  name = "EIPAssignmentLambdaPolicy"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ec2:DescribeInstances",
+          "ec2:DescribeAddresses",
+          "ec2:AssociateAddress",
+          "autoscaling:CompleteLifecycleAction"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_execution_role_attachment" {
+  role       = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.eip_assignment_lambda_policy.arn
 }

@@ -1,7 +1,3 @@
-data "aws_ssm_parameter" "github_token" {
-  name = "/secrets/github/token/arn"
-}
-
 
 data "aws_ssm_parameter" "vpc_id" {
   name = "/network/sotw-vpc/id"

@@ -62,7 +62,7 @@ variable "send_registration_emails" {
 }
 
 variable "invite_token_expire_minutes" {
-  type = string
+  type    = string
   default = "10080"
 }
 
@@ -80,7 +80,7 @@ variable "app_on_time" {
 
 variable "minimum_ec2_instances" {
   type    = number
-  default = 1
+  default = 2
 }
 
 variable "maximum_ec2_instances" {
@@ -88,7 +88,45 @@ variable "maximum_ec2_instances" {
   default = 3
 }
 
+variable "desired_ec2_instances" {
+  type    = number
+  default = 2
+}
+
+
 variable "instance_type" {
   type    = string
   default = "t3.micro"
+}
+
+variable "min_on_demand_ec2_instances" {
+  type    = string
+  default = 0
+}
+
+variable "desired_count_sotw_ecs_tasks" {
+  type    = string
+  default = 2
+}
+
+variable "use_spot_instances" {
+  type        = bool
+  default     = false
+  description = "Turn off when account is in the first 12 months, otherwise turn on."
+}
+
+variable "on_demand_percentage_above_base_capacity" {
+  type        = string
+  default     = 50
+  description = "The percentage of instances for the SOTW app that should be on-demand. Only applies when using use_spot_instances is true."
+}
+
+variable "deployment_minimum_healthy_percent" {
+  type    = number
+  default = 50
+}
+
+variable "deployment_maximum_percent" {
+  type    = number
+  default = 100
 }

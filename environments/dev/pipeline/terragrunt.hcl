@@ -6,6 +6,9 @@ dependencies {
   paths = ["../secrets", "../network", "../ecs"]
 }
 
+inputs = {
+  build_branch = "main" // change this for testing stuff
+}
 
 terraform {
   source = "../../../modules/pipeline/"
