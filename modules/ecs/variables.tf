@@ -66,6 +66,15 @@ variable "invite_token_expire_minutes" {
   default = "10080"
 }
 
+variable "access_token_expire_minutes" {
+  type    = string
+  default = "42300"
+}
+
+variable "session_cookie_expire_seconds" {
+  type    = string
+  default = "2592000"
+}
 variable "app_off_time" {
   type        = string
   default     = "30 03"

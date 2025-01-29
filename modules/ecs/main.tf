@@ -128,6 +128,8 @@ resource "aws_ecs_task_definition" "this" {
         { name = "SPOTIFY_CALLBACK_URI", value = "https://${local.domain_name}/" },
         { name = "SEND_REGISTRATION_EMAILS", value = var.send_registration_emails },
         { name = "SHARE_TOKEN_EXPIRE_MINUTES", value = var.invite_token_expire_minutes },
+        { name = "ACCESS_TOKEN_EXPIRE_MINUTES", value = var.access_token_expire_minutes },
+        { name = "SESSION_COOKIE_EXPIRE_SECONDS", value = var.session_cookie_expire_seconds },
       ],
       healthCheck = {
         command     = ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
@@ -181,7 +183,7 @@ resource "aws_ecs_task_definition" "this" {
         interval    = 30
         timeout     = 5
         retries     = 3
-        startPeriod = 180
+        startPeriod = 240
       }
     },
     {
