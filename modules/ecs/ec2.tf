@@ -18,7 +18,7 @@ resource "aws_launch_template" "ecs_lt" {
     device_name = "/dev/xvda"
     ebs {
       volume_size = 30
-      volume_type = "gp2"
+      volume_type = "gp3"
     }
   }
 
