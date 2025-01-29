@@ -77,25 +77,6 @@ resource "aws_codepipeline" "codepipeline" {
     }
   }
 
-  dynamic "stage" {
-    for_each = var.env == "prod" ? ["run-only-in-prod"] : []
-    content {
-      name = "Approval"
-
-      action {
-        name     = "ManualApproval"
-        category = "Approval"
-        owner    = "AWS"
-        provider = "Manual"
-        version  = "1"
-
-        configuration = {
-          CustomData = "If you're an admin, approve this please :)"
-        }
-      }
-    }
-  }
-
   stage {
     name = "Deploy"
 
