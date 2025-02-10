@@ -45,6 +45,8 @@ resource "aws_iam_policy" "ecs_instance" {
       {
         Action = [
           "ses:UseConfigurationSet",
+          "ses:SendEmail",
+          "ses:SendRawEmail"
         ]
         Resource = [
           "arn:aws:ses:*:${var.account_id}:configuration-set/*"

@@ -16,6 +16,7 @@ inputs = {
   on_demand_percentage_above_base_capacity = 0
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent = 200
+  send_registration_emails = false
 }
 
 
