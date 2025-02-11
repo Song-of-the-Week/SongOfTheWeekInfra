@@ -77,5 +77,5 @@ resource "aws_internet_gateway" "internet_gateway" {
 }
 
 resource "aws_eip" "this" {
-  count = 2 # Number of Elastic IPs to allocate
+  count = var.eip_count # Number of Elastic IPs to allocate
 }

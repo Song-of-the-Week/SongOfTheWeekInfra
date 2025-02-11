@@ -1,5 +1,9 @@
 locals {
   ecs_subnets = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value, data.aws_ssm_parameter.subnet_1c_id.value, data.aws_ssm_parameter.subnet_1d_id.value, data.aws_ssm_parameter.subnet_1e_id.value, data.aws_ssm_parameter.subnet_1f_id.value]
+  # We cannot create more EC2s than the number of EIPs we have
+  # If we need to create more EC2s, first create more EIPs
+  # If this ever gets to the point where we have 4+ EIPs in use, it may well be worth using an ELB.
+  eip_count = data.aws_ssm_parameter.eip_count.value
 }
 
 resource "aws_launch_template" "ecs_lt" {
@@ -8,7 +12,6 @@ resource "aws_launch_template" "ecs_lt" {
   instance_type = var.instance_type
 
   key_name = aws_key_pair.ec2_ecs_key.key_name
-  #   vpc_security_group_ids = [data.aws_ssm_parameter.sg_id.value]
 
   iam_instance_profile {
     name = aws_iam_instance_profile.ecs_instance_profile.name
@@ -74,7 +77,7 @@ resource "aws_autoscaling_group" "ecs_asg" {
   vpc_zone_identifier = local.ecs_subnets
   desired_capacity    = var.desired_ec2_instances
   min_size            = var.minimum_ec2_instances
-  max_size            = var.maximum_ec2_instances
+  max_size            = min(var.maximum_ec2_instances, local.eip_count)
   dynamic "mixed_instances_policy" {
     for_each = var.use_spot_instances == true ? ["use spot instances"] : []
     content {
@@ -111,23 +114,6 @@ resource "aws_autoscaling_group" "ecs_asg" {
   }
 
 }
-
-# resource "aws_autoscaling_schedule" "on" {
-#   scheduled_action_name  = "sotw-ecs-ec2-schedule-on-${var.env}"
-#   min_size               = var.minimum_ec2_instances
-#   max_size               = var.maximum_ec2_instances
-#   desired_capacity       = 1
-#   recurrence             = "${var.app_on_time} * * *"
-#   autoscaling_group_name = aws_autoscaling_group.ecs_asg.name
-# }
-# resource "aws_autoscaling_schedule" "off" {
-#   scheduled_action_name  = "sotw-ecs-ec2-schedule-off-${var.env}"
-#   min_size               = 0
-#   max_size               = 0
-#   desired_capacity       = 0
-#   recurrence             = "${var.app_off_time} * * *"
-#   autoscaling_group_name = aws_autoscaling_group.ecs_asg.name
-# }
 
 data "aws_ssm_parameter" "ec2_public_key" {
   name = "/secrets/ecs/key-pair/public"
