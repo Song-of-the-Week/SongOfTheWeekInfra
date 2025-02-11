@@ -112,12 +112,12 @@ resource "aws_route53_record" "secondary_www" {
 resource "aws_route53_health_check" "health_checks" {
   count             = length(local.public_ips)
   ip_address        = local.public_ips[count.index] # Monitor each EIP
-  type              = "HTTPS"
+  type              = "HTTP"
   resource_path     = "/health" # The path for the health check
-  port              = 443
+  port              = 80
   failure_threshold = 3    # Number of consecutive failures before marking the endpoint as unhealthy
   request_interval  = 30   # Interval between health checks (seconds)
-  measure_latency   = true # Optional: Measure the latency of the check
+  measure_latency   = false # Optional: Measure the latency of the check
   regions           = ["us-east-1", "us-west-1", "us-west-2", "ap-northeast-1", "ap-southeast-1", "ap-southeast-2", "eu-west-1", "sa-east-1"]
   tags = {
     "healthCheckId" = count.index
