@@ -11,6 +11,7 @@ inputs = {
   desired_count_sotw_ecs_tasks = 2
   maximum_ec2_instances = 2
   minimum_ec2_instances = 2
+  on_demand_percentage_above_base_capacity = 0
   use_spot_instances = true
 }
 
