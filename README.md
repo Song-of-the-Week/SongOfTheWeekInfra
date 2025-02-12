@@ -90,3 +90,7 @@ Our current setup requires an intial set of images to exist in ECR at the specif
 ## Let's Encrypt
 
 You need to add the email you want registered with your Let's Encrypt SSL certificate in Parameter Store at `/secrets/lets-encrypt-email` in Parameter Store.
+
+## Manual ECS AMI Creation
+
+In order to save money, we have created an "unofficial" ECS-optimized instance. AWS provides an excellent script to do this, which you can find (here)[https://github.com/aws/amazon-ecs-ami/]. Run the script, with your desired EBS volume size (we selected 12 GB). In order to keep your system up to date, you will want to intermittently check for new updates from this repository and re-run the script, then re-deploy your the `ecs` module. From here, you will want to recreate or deploy new instances.

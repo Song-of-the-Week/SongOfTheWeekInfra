@@ -8,7 +8,7 @@ locals {
 
 resource "aws_launch_template" "ecs_lt" {
   name_prefix   = "ecs-template"
-  image_id      = data.aws_ami.amazon_linux_2.id
+  image_id      = data.aws_ami.custom_ecs_ami.id
   instance_type = var.instance_type
 
   key_name = aws_key_pair.ec2_ecs_key.key_name
@@ -20,7 +20,7 @@ resource "aws_launch_template" "ecs_lt" {
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
-      volume_size = 30
+      volume_size = 12
       volume_type = "gp3"
     }
   }
@@ -51,25 +51,15 @@ data "template_file" "user_data" {
 }
 
 
-data "aws_ami" "amazon_linux_2" {
+data "aws_ami" "custom_ecs_ami" {
   most_recent = true
 
   filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "owner-alias"
-    values = ["amazon"]
-  }
-
-  filter {
     name   = "name"
-    values = ["amzn2-ami-ecs-hvm-*-x86_64-ebs"]
+    values = ["unofficial-amzn2-ami-ecs-hvm-*-x86_64-ebs"]
   }
 
-  owners = ["amazon"]
+  owners = ["self"]
 }
 
 
