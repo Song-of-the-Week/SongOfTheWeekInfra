@@ -78,3 +78,7 @@ data "aws_ssm_parameter" "ecs_nginx_version" {
 data "aws_ssm_parameter" "lets_encrypt_email" {
   name = "/secrets/lets-encrypt-email"
 }
+
+data "aws_ssm_parameter" "eip_count" {
+  name = "/network/elastic-ip-count"
+}

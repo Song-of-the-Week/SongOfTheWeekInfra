@@ -88,3 +88,9 @@ resource "aws_ssm_parameter" "domain" {
   type  = "String"
   value = var.domain_name
 }
+
+resource "aws_ssm_parameter" "eip_count" {
+  name  = "/network/elastic-ip-count"
+  type  = "String"
+  value = var.eip_count
+}

@@ -19,3 +19,9 @@ variable "acm_cert_id" {
   default = "600396fb-89ba-4790-a6ab-ab60af3be6cc"
   type    = string
 }
+
+variable "eip_count" {
+  default = 2
+  type = number
+  description = "Number of Elastic IPs to allocate. This "
+}

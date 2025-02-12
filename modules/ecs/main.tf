@@ -290,13 +290,7 @@ resource "aws_ecs_service" "this" {
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.this.arn
   desired_count   = var.desired_count_sotw_ecs_tasks // TODO: REVISIT THIS BEFORE DEPLOYING FOR REAL
-
-  # network_configuration {
-  #   subnets         = [data.aws_ssm_parameter.subnet_1a_id.value, data.aws_ssm_parameter.subnet_1b_id.value]
-  #   security_groups = [data.aws_ssm_parameter.sg_id.value]
-  # }
-
-  force_new_deployment = true
+  force_new_deployment = false
 
   placement_constraints {
     type = "distinctInstance"
