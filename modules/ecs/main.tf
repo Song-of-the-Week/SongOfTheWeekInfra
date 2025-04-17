@@ -174,9 +174,9 @@ resource "aws_ecs_task_definition" "this" {
         swappiness = 10
       }
       environment = [
-        { name = "VUE_APP_HOSTNAME", value = "https://${local.domain_name}/" },
-        { name = "VUE_APP_API_HOSTNAME", value = "https://${local.domain_name}/" },
-        { name = "VUE_APP_SPOTIFY_CALLBACK_URI", value = "https://${local.domain_name}/" },
+        { name = "VITE_HOSTNAME", value = "https://${local.domain_name}/" },
+        { name = "VITE_API_HOSTNAME", value = "https://${local.domain_name}/" },
+        { name = "VITE_SPOTIFY_CALLBACK_URI", value = "https://${local.domain_name}/" },
       ]
       healthCheck = {
         command     = ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
