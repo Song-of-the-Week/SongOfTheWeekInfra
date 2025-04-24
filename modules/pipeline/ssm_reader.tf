@@ -1,4 +1,3 @@
-
 data "aws_ssm_parameter" "vpc_id" {
   name = "/network/sotw-vpc/id"
 }
