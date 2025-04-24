@@ -15,6 +15,9 @@ locals {
 
 resource "aws_ecs_cluster" "this" {
   name = local.cluster_name
+  lifecycle {
+    ignore_changes = [service_connect_defaults]
+  }
 }
 
 resource "aws_ecs_capacity_provider" "this" {
@@ -55,10 +58,13 @@ resource "aws_ecs_task_definition" "this" {
     cpu_architecture        = "X86_64"
   }
 
-
+  # if you need to make a change, comment this line out
+  # but terraform thinks it changes every time
+  lifecycle {
+    ignore_changes = [volume]
+  }
   volume {
     name = "certificate-volume"
-    # configure_at_launch = false
 
 
     efs_volume_configuration {
@@ -155,7 +161,6 @@ resource "aws_ecs_task_definition" "this" {
         containerName = var.backend_container_name
         condition     = "START"
       }]
-      command = ["npm", "run", "serve-prod"]
       logConfiguration = {
         logDriver = "awslogs",
         options = {
